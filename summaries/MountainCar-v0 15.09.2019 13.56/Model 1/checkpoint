@@ -1,0 +1,2 @@
+model_checkpoint_path: "F:\\RL\\summaries\\MountainCar-v0 15.09.2019 13.56\\Model 1\\model.chkpt"
+all_model_checkpoint_paths: "F:\\RL\\summaries\\MountainCar-v0 15.09.2019 13.56\\Model 1\\model.chkpt"
