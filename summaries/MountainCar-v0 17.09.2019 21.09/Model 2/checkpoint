@@ -1,0 +1,2 @@
+model_checkpoint_path: "F:\\RL_OpenAI_Gym\\summaries\\MountainCar-v0 17.09.2019 21.09\\Model 2\\model.chkpt"
+all_model_checkpoint_paths: "F:\\RL_OpenAI_Gym\\summaries\\MountainCar-v0 17.09.2019 21.09\\Model 2\\model.chkpt"

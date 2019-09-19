@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 from importlib import reload
+from itertools import product
 
 def dict2str(feed_dict, sep=", "):
     """
@@ -59,3 +60,46 @@ def boolean_string(s):
     if s not in ('false', 'true'):
         raise ValueError('Not a valid boolean string')
     return (s=='true')
+
+def parameter_generator(*args):
+    """
+    Generates different combination from given arguments
+    args:
+        Arguments of one of these typs: iterable objects (list, tuple, set, range), dictionary
+    yields:
+        list : List containing one value from each given arguments
+
+    example:
+    Input:
+    for para in parameter_generator([1,2], (True, False), {"vowels" : "aeiou", "even":[2,4]}):
+        print("para:", para)
+
+    Output:
+
+    para: [1, True, {'vowels': 'a', 'even': 2}]
+    para: [1, True, {'vowels': 'a', 'even': 4}]
+    para: [1, True, {'vowels': 'e', 'even': 2}]
+    para: [1, True, {'vowels': 'e', 'even': 4}]
+    .
+    .
+    para: [2, True, {'vowels': 'u', 'even': 4}]
+    para: [2, True, {'vowels': 'o', 'even': 2}]
+    para: [2, True, {'vowels': 'u', 'even': 4}]
+
+    The order of returned parameter depends on the order they were given. 
+    Dictionary arguments get back dictionary results with a single value in its respective key.
+    """
+    parameters = []
+    parameter_keys = []
+    # Argument preprocessing
+    for arg in args:
+        if isinstance(arg, dict):
+            parameters.append(product(*arg.values()))
+            parameter_keys.append(arg.keys())
+        else:
+            parameters.append(arg)
+            parameter_keys.append(None)
+    
+    for parameter_values in product(*parameters):
+        result = [val if keys is None else dict(zip(keys, val)) for keys, val in zip(parameter_keys, parameter_values)]
+        yield result

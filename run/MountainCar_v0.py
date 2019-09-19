@@ -37,7 +37,7 @@ def get_configuration(config_file):
                    "others" : others}
     return config_dict
 
-def run(env, seed, mem, logger, summ_dir, init_kwargs, train_kwargs, log_init_kwargs, log_train_kwargs, 
+def run(env, seed, mem, logger, summ_dir, epochs, init_kwargs, train_kwargs, log_init_kwargs, log_train_kwargs, 
         plot_result, *, model_i=1, sess_config=None, test_model_chkpt=None):
     """
     Runs the simulation with given parameters
@@ -71,7 +71,7 @@ def run(env, seed, mem, logger, summ_dir, init_kwargs, train_kwargs, log_init_kw
             # Restore model variables
             agent.restore_model(test_model_chkpt)
         # Run (test/train) the agent
-        results = agent.run(**train_kwargs, **log_train_kwargs, training=training)
+        results = agent.run(**train_kwargs, **log_train_kwargs,  epochs=epochs, training=training)
         if training:
             # Save model as checkpoint
             agent.save_model(os.path.join(_summ_dir, "model.chkpt"))
@@ -107,7 +107,7 @@ def main():
     arg_parser.add_argument("--config_file", help="ini Config file", type=str, default=default_config_file)
     arg_parser.add_argument("--plot_result", help="Plot result in matplotlib", type=boolean_string, default=False)
     arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to test", type=str, default=None)
-    arg_parser.add_argument("--test_epochs", help="Number of epochs to test", type=int, default=0)
+    arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
     arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=0)
     args = arg_parser.parse_args()
     # Load and unpack configurations
@@ -116,22 +116,22 @@ def main():
     log_init_kwargs, log_train_kwargs = config_dict["log_kwargs"]
     mem_size = config_dict["others"]["mem_size"]
     # Setup logger directory
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    os.makedirs(os.path.dirname(args.log_file), exist_ok=True)
     # Create environment, replay buffer and buffer
     env = gym.make(ENV_NAME)
     mem = ReplayBuffer(mem_size)
-    logger = get_logger(log_file)
+    logger = get_logger(args.log_file)
     # Wrap environment to record videos
     if args.record_interval > 0:
-        env = gym.wrappers.Monitor(env, os.path.join(summ_dir, "videos"), force=True,
+        env = gym.wrappers.Monitor(env, os.path.join(args.summ_dir, "videos"), force=True,
                                    video_callable=lambda epoch: not epoch%args.record_interval)
     if args.test_model_chkpt is not None:
         # Override goal_trials and display_every parameters
         train_kwargs["goal_trials"] = 1
-        train_kwargs["display_every"] = train_kwargs["epochs"]/10
+        train_kwargs["display_every"] = args.record_interval if (args.record_interval > 0) else args.test_epochs/10
     # Run model
     for model_i, seed in enumerate(SEEDS, start=1):
-        run(env, seed, mem, logger, args.summ_dir, init_kwargs, train_kwargs, log_init_kwargs, log_train_kwargs, 
+        run(env, seed, mem, logger, args.summ_dir, args.epochs, init_kwargs, train_kwargs, log_init_kwargs, log_train_kwargs, 
             args.plot_result, model_i=model_i, sess_config=TF_CONFIG, test_model_chkpt=args.test_model_chkpt)
 
 ################################################ End of Local Functions #######################################################
@@ -146,5 +146,4 @@ TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memor
                               allow_soft_placement=True)
 
 if __name__ == "__main__":
-    main(seed, mem_size, logger, summ_dir, init_kwargs, train_kwargs, log_init_kwargs, log_train_kwargs, 
-         plot_result, record_interval, test_model_chkpt)
+    main()
