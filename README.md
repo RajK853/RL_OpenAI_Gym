@@ -10,6 +10,7 @@
  ## Available solutions:
  1. MountainCar-v0
  2. LunarLander-v2
+ 3. CartPole-v0
 
  ## Training the agent
  1. In the **config** directory, edit the parameter values for required environment.
