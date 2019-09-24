@@ -45,7 +45,10 @@ class MountainCar:
         # Environment settings
         self.env = env
         self.render = render
-        self.num_actions = self.env.action_space.n
+        if hasattr(self.env.action_space, "n"):
+            self.num_actions = self.env.action_space.n
+        else:
+            self.num_actions = self.env.action_space.shape[0]
         self.state_shape = self.env.observation_space.shape
         # Estimator settings
         self.ddqn = ddqn

@@ -6,10 +6,10 @@
  1. tensorflow-gpu 1.14
  2. gym
  3. matplotlib
- 4. numpy
 
  ## Available solutions:
  1. MountainCar-v0
+ 2. LunarLander-v2
 
  ## Training the agent
  1. In the **config** directory, edit the parameter values for required environment.
