@@ -1,11 +1,14 @@
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
+import numpy as np
 
-class Estimator():
+
+class Estimator:
     """
     Q-Value Estimator neural network.
     This network is used for both the local and target estimators.
     """
+
     def __init__(self, input_shape, output_size, scope="local_network"):
         """
         Constructor function
@@ -32,14 +35,19 @@ class Estimator():
         """
         # Placeholders for our input and output
         self.states_ph = tf_v1.placeholder(shape=[None, *input_shape], dtype=tf.float32, name="states")
-        self.q_values_ph = tf_v1.placeholder(shape=[None, output_size], dtype=tf.float32, name="q_values")
+        self.q_values_ph = tf_v1.placeholder(shape=[None, ], dtype=tf.float32, name="q_values")
+        self.actions_ph = tf_v1.placeholder(shape=[None, ], dtype=tf.int32, name="action_values")
         # Dense layers
         layer_out = tf.keras.layers.Dense(50, activation=tf.nn.relu)(self.states_ph)
         layer_out = tf.keras.layers.Dense(50, activation=tf.nn.relu)(layer_out)
         layer_out = tf.keras.layers.Dense(50, activation=tf.nn.relu)(layer_out)
         self.logits = tf.keras.layers.Dense(output_size)(layer_out)
+        # Get the predictions for the chosen actions only
+        batch_size = tf.shape(self.q_values_ph)[0]
+        gather_indices = tf.range(batch_size) * tf.shape(self.logits)[1] + self.actions_ph
+        self.action_predictions = tf.gather(tf.reshape(self.logits, [-1]), gather_indices)
         # Calculate the loss
-        self.loss = tf_v1.losses.mean_squared_error(self.q_values_ph, self.logits)
+        self.loss = tf_v1.losses.mean_squared_error(self.q_values_ph, self.action_predictions)
         # Optimizer Parameters from original paper
         self.optimizer = tf_v1.train.AdamOptimizer()
         self.train_op = self.optimizer.minimize(self.loss)
@@ -66,16 +74,16 @@ class Estimator():
         """
         return sess.run(self.logits, feed_dict={self.states_ph: state})
 
-    def update(self, sess, state, pred_y):
+    def update(self, sess, state, targets, actions):
         """
         Updates the estimator towards the given targets.
         args:
           sess (tf_v1.Session) : Tensorflow session object
           state : State input of shape [batch_size, state_shape]
-          pred_y: Targets of shape [batch_size]
+          targets: Targets of shape [batch_size]
         returns:
           Tensor : Reduced average loss of the batch
         """
-        feed_dict = {self.states_ph: state, self.q_values_ph: pred_y}
+        feed_dict = {self.states_ph: state, self.q_values_ph: targets, self.actions_ph: actions}
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed_dict)
         return loss

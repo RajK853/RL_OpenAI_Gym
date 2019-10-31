@@ -1,5 +1,6 @@
 import os
 import sys
+
 """
 Insert root dirctory in sys.path so that modules in src directory can be assessed
 by all the modules in this directory
