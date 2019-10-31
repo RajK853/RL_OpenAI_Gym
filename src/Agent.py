@@ -1,19 +1,17 @@
 import os
 import numpy as np
 from time import time
-from datetime import datetime
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
 # Local modules
-from src import Estimator
+from src.Estimator import Estimator
 from src.Utils import dict2str
 
-class MountainCar:
-    """
-    MountainCar-v0 agent
-    """
+
+class Agent:
     steps = 0
-    def __init__(self, sess, env, memory, batch_size=100, eps_limits=None, eps_decay=0.25, df=0.97, lr=0.9, tau=0.01,\
+
+    def __init__(self, sess, env, memory, batch_size=100, eps_limits=None, eps_decay=0.25, df=0.97, lr=0.9, tau=0.01, \
                  ddqn=False, render=False, summ_dir=None):
         """
         Constructor function
@@ -58,7 +56,9 @@ class MountainCar:
             self.target_estimator = Estimator(self.state_shape, self.num_actions, scope="Target_network")
             self.target_vars = tf_v1.get_collection(tf_v1.GraphKeys.TRAINABLE_VARIABLES, scope="Target_network")
             with tf_v1.name_scope("Weights_updater"):
-                self.weights_updater = tf.group([tf_v1.assign(t_var,t_var+self.tau*(q_var-t_var)) for t_var, q_var in zip(self.target_vars, self.q_vars)])
+                self.weights_updater = tf.group(
+                        [tf_v1.assign(t_var, t_var + self.tau * (q_var - t_var)) for t_var, q_var in
+                         zip(self.target_vars, self.q_vars)])
         else:
             self.target_estimator = self.local_estimator
             self.target_vars = None
@@ -83,9 +83,10 @@ class MountainCar:
             self.epoch_avg_loss_ph = tf_v1.placeholder(tf.float32, name="epoch_avg_loss_ph")
             self.epoch_max_pos_ph = tf_v1.placeholder(tf.float32, name="epoch_max_pos_ph")
             self.epoch_eps_ph = tf_v1.placeholder(tf.float32, name="epoch_eps_ph")
-            summary_dict = {"epoch_reward":self.epoch_reward_ph, "epoch_avg_loss":self.epoch_avg_loss_ph, 
-                            "epoch_max_pos":self.epoch_max_pos_ph, "epoch_eps":self.epoch_eps_ph}
-            summaries = [tf_v1.summary.scalar(summ_name, placeholder) for summ_name, placeholder in summary_dict.items()]
+            summary_dict = {"epoch_reward": self.epoch_reward_ph, "epoch_avg_loss": self.epoch_avg_loss_ph,
+                            "epoch_max_pos": self.epoch_max_pos_ph, "epoch_eps": self.epoch_eps_ph}
+            summaries = [tf_v1.summary.scalar(summ_name, placeholder) for summ_name, placeholder in
+                         summary_dict.items()]
         return tf_v1.summary.merge(summaries)
 
     def get_summaries(self, feed_dict):
@@ -112,11 +113,11 @@ class MountainCar:
         """
         eps = 0.0
         # Explore or exploit
-        explore = (epoch%explore_exploit_interval)<(explore_ratio*explore_exploit_interval)
+        explore = (epoch % explore_exploit_interval) < (explore_ratio * explore_exploit_interval)
         if explore:
             max_eps, min_eps = self.eps_limits
-            n = int((epoch+1)/explore_exploit_interval)
-            eps = max(max_eps*self.eps_decay**n, min_eps)
+            n = int((epoch + 1) / explore_exploit_interval)
+            eps = max(max_eps * self.eps_decay ** n, min_eps)
         return eps
 
     def _choose_action(self, state):
@@ -142,23 +143,16 @@ class MountainCar:
             float : Reduced average loss of the sampled batch
         """
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
-        # Predict Q-values for current and next states
-        q_sa_t0 = self.local_estimator.predict_batch(self.sess, states)
+        # Predict Q-values for next states
         q_sa_t1 = self.target_estimator.predict_batch(self.sess, next_states)
-        # Empty numpy arrays for input and output batches
-        x = np.zeros((len(states), *self.state_shape))
-        y = np.zeros((len(actions), self.num_actions))
-        for t, (state, action, reward, done) in enumerate(zip(states, actions, rewards, dones)):
-            current_q, future_q = q_sa_t0[t], q_sa_t1[t]          # get the Q-values for all actions in current state
+        # Empty numpy array for q_targets
+        q_targets = np.zeros(len(actions))
+        for t, (future_q, reward, done) in enumerate(zip(q_sa_t1, rewards, dones)):
             if done:
-                current_q[action] = (1-self.lr)*current_q[action] + self.lr*reward
-                #current_q[action] = reward
+                q_targets[t] = self.lr * reward
             else:
-                # Q(s,a) = (1-learning_rate)*Q(s,a) + learning_rate*(reward + discount_rate*Qmax(s+1,a+1))
-                current_q[action] = (1-self.lr)*current_q[action] + self.lr*(reward + self.df*np.amax(future_q))
-            x[t] = state
-            y[t] = current_q
-        batch_avg_loss = self.local_estimator.update(self.sess, x, y)
+                q_targets[t] = self.lr * (reward + self.df * np.amax(future_q))
+        batch_avg_loss = self.local_estimator.update(self.sess, states, q_targets, actions)
         return batch_avg_loss
 
     def transfer_weights(self):
@@ -170,7 +164,8 @@ class MountainCar:
             return
         self.sess.run(self.weights_updater)
 
-    def _run_once(self, epoch, target_update_steps=1000, explore_ratio=0.25, explore_exploit_interval=20, training=True):
+    def _run_once(self, epoch, target_update_steps=1000, explore_ratio=0.25, explore_exploit_interval=20,
+                  training=True):
         """
         Runs the simulation for one epoch
         args:
@@ -191,7 +186,7 @@ class MountainCar:
         while not done:
             action = self._choose_action(state)
             next_state, reward, done, info = self.env.step(action)
-            if self.render: 
+            if self.render:
                 self.env.render()
             self.replay_buffer.add(state, action, reward, next_state, done)
             if training:
@@ -200,13 +195,13 @@ class MountainCar:
             tot_reward += reward
             max_pos = max(max_pos, next_state[0])
             state = next_state
-            if training and self.ddqn and (not self.steps%target_update_steps):
+            if training and self.ddqn and (not self.steps % target_update_steps):
                 self.transfer_weights()
             self.steps += 1
         mean_loss = np.mean(losses) if losses else 0.0
         return mean_loss, tot_reward, max_pos
 
-    def run(self, epochs, goal_trials=100, goal_reward=-110.0, explore_ratio=0.25, explore_exploit_interval=20, 
+    def run(self, epochs, goal_trials=100, goal_reward=-110.0, explore_ratio=0.25, explore_exploit_interval=20,
             display_every=100, target_update_steps=1000, return_result=True, training=True):
         """
         Runs the simulation for several epochs
@@ -237,12 +232,13 @@ class MountainCar:
         print("{} agent. Please be patient...".format("Training" if training else "Testing"), end="\r")
         t0 = time()
         run_args = (target_update_steps, explore_ratio, explore_exploit_interval, training)
-        for epoch in range(1, epochs+1):
+        for epoch in range(1, epochs + 1):
             mean_loss, tot_reward, max_pos = self._run_once(epoch, *run_args)
-            if not epoch%display_every:                                     # Display epoch information
-                t = time()-t0                                               # Measure time difference from previous display
+            if not epoch % display_every:  # Display epoch information
+                t = time() - t0  # Measure time difference from previous display
                 print_args = (epoch, mean_loss, tot_reward, max_pos, t)
-                print("Epoch: {}, mean_loss: {:.4f}, total_reward: {}, max_pos: {:.4f}, in {:.4f} secs".format(*print_args))
+                print("Epoch: {}, mean_loss: {:.4f}, total_reward: {}, max_pos: {:.4f}, in {:.4f} secs".format(
+                        *print_args))
                 print("{} agent. Please be patient...".format("Training" if training else "Testing"), end="\r")
                 t0 = time()
             rewards.append(tot_reward)
@@ -263,7 +259,8 @@ class MountainCar:
                     max_mean_reward = (epoch, mean_reward)
             # Log summaries to display in Tensorboard
             if self.summ_writer is not None:
-                feed_dict = {self.epoch_reward_ph:tot_reward, self.epoch_avg_loss_ph:mean_loss, self.epoch_max_pos_ph:max_pos, self.epoch_eps_ph:self.eps}
+                feed_dict = {self.epoch_reward_ph: tot_reward, self.epoch_avg_loss_ph: mean_loss,
+                             self.epoch_max_pos_ph: max_pos, self.epoch_eps_ph: self.eps}
                 summary = self.get_summaries(feed_dict)
                 self.summ_writer.add_summary(summary, epoch)
         print("{:<50}".format(""), end="\r")
@@ -299,9 +296,10 @@ class MountainCar:
         parameter_str = dict2str(parameter_dict)
         logger.debug("{} - {}".format(model_name, parameter_str))
         num_goals, first_goal, max_goal = goal_summary
-        first_goal_epoch, first_goal_reward = first_goal 
+        first_goal_epoch, first_goal_reward = first_goal
         max_goal_epoch, max_goal_reward = max_goal
         logger.info("Goals achieved: {:<20}".format(num_goals))
         if num_goals:
-            logger.info("First goal achieved: {:.2f} mean reward at {} epoch.".format(first_goal_reward, first_goal_epoch))
+            logger.info(
+                    "First goal achieved: {:.2f} mean reward at {} epoch.".format(first_goal_reward, first_goal_epoch))
         logger.info("Max goal achieved: {:.2f} mean reward at {} epoch.\n".format(max_goal_reward, max_goal_epoch))

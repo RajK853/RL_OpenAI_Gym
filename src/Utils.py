@@ -1,7 +1,14 @@
+import os
 import logging
+import argparse
 import numpy as np
+import configparser
 from importlib import reload
 from itertools import product
+from datetime import datetime
+
+VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
+
 
 def dict2str(feed_dict, sep=", "):
     """
@@ -20,6 +27,7 @@ def dict2str(feed_dict, sep=", "):
             dict_strs.append("{}:{}".format(key, value))
     return sep.join(dict_strs)
 
+
 def get_logger(log_file):
     """
     Returns root logger object to log messages in a file and on console
@@ -28,11 +36,11 @@ def get_logger(log_file):
     returns:
         logging.Logger : Logger object 
     """
-    reload(logging)          # Due to issue with creating root logger in Notebook
+    reload(logging)  # Due to issue with creating root logger in Notebook
     logging.basicConfig(level=logging.DEBUG,
                         format="%(message)s",
                         datefmt="%m-%d %H:%M",
-                        filename=log_file, 
+                        filename=log_file,
                         filemode="a")
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -42,13 +50,15 @@ def get_logger(log_file):
     logger.addHandler(console)
     return logger
 
+
 def eval_dict_values(config_dict):
     """
     Evaluates the values of the dictionary
     args:
         config_dict (dict) : Dictionary
     """
-    return {key:eval(value) for key, value in config_dict.items()}
+    return {key: eval(value) for key, value in config_dict.items()}
+
 
 def boolean_string(s):
     """
@@ -59,7 +69,8 @@ def boolean_string(s):
     s = s.lower()
     if s not in ('false', 'true'):
         raise ValueError('Not a valid boolean string')
-    return (s=='true')
+    return (s == 'true')
+
 
 def parameter_generator(*args):
     """
@@ -99,7 +110,61 @@ def parameter_generator(*args):
         else:
             parameters.append(arg)
             parameter_keys.append(None)
-    
+
     for parameter_values in product(*parameters):
         result = [val if keys is None else dict(zip(keys, val)) for keys, val in zip(parameter_keys, parameter_values)]
         yield result
+
+
+def get_configuration(config_file):
+    """
+    Loads configuration file and returns its data as dict
+    args:
+        config_file (str) : INI Configuration file address
+    returns:
+        dict : Configuration data as dictionary
+    """
+    config_parser = configparser.ConfigParser()
+    config_parser.read(config_file)
+    # Load configurations from config file
+    init_kwargs = eval_dict_values(config_parser["init_kwargs"])
+    log_init_kwargs = eval_dict_values(config_parser["log_init_kwargs"])
+    train_kwargs = eval_dict_values(config_parser["train_kwargs"])
+    log_train_kwargs = eval_dict_values(config_parser["log_train_kwargs"])
+    others = eval_dict_values(config_parser["others"])
+    # Prepare configuration dictionary
+    config_dict = {"kwargs": (init_kwargs, train_kwargs),
+                   "log_kwargs": (log_init_kwargs, log_train_kwargs),
+                   "others": others}
+    return config_dict
+
+
+def parse_args():
+    """
+    Parse arguments from command line
+    returns:
+         argparse.ArgumentParser : Parsed arguments
+    """
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
+    arg_parser.add_argument("--log_file", help="Log file", type=str, default=None)
+    arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
+    arg_parser.add_argument("--config_file", help="INI Config file", type=str, default=None)
+    arg_parser.add_argument("--plot_result", help="Plot result in matplotlib", type=boolean_string, default=False)
+    arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to test", type=str, default=None)
+    arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
+    arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=0)
+    arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=True)
+    arg_parser.add_argument("--display_every", help="Display information on every given epoch", type=int, default=10)
+    _args = arg_parser.parse_args()
+    # Default summary directory, log file and config file
+    date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
+    env_name = _args.env_name
+    assert (env_name in VALID_ENVS), "Invalid environment received! Enter one of the followings:\n{}".format(VALID_ENVS)
+    if _args.summ_dir is None:
+        _args.summ_dir = os.path.join("summaries", "{} {}".format(env_name, date_time))
+    if _args.log_file is None:
+        _args.log_file = os.path.join(_args.summ_dir, "log", "Results {} {}.log".format(env_name, date_time))
+    if _args.config_file is None:
+        _args.config_file = os.path.join("config", "{}.ini".format(env_name))
+    return _args
