@@ -4,10 +4,27 @@ import argparse
 import numpy as np
 import configparser
 from importlib import reload
-from itertools import product
 from datetime import datetime
 
+from gym.spaces import Box, Discrete
+
 VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
+
+
+def get_space_size(space):
+    if isinstance(space, Box):
+        return np.prod(space.shape, axis=0)
+
+    elif isinstance(space, Discrete):
+        return space.n
+    else:
+        raise NotImplementedError(f"Invalid space of type '{type(space)}'!")
+
+
+def normalize_array(array):
+    max_value = max(array)
+    min_value = min(array)
+    return (array-min_value)/(max_value-min_value)
 
 
 def dict2str(feed_dict, sep=", "):
@@ -15,7 +32,7 @@ def dict2str(feed_dict, sep=", "):
     Convert dictionary into a single string
     args:
         feed_dict (dict) : Dictionary to convert
-        sep (str) : Seperator to join pair of key:value
+        sep (str) : Separator to join pair of key:value
     returns:
         str : Converted dict as string
     """
@@ -72,50 +89,6 @@ def boolean_string(s):
     return (s == 'true')
 
 
-def parameter_generator(*args):
-    """
-    Generates different combination from given arguments
-    args:
-        Arguments of one of these typs: iterable objects (list, tuple, set, range), dictionary
-    yields:
-        list : List containing one value from each given arguments
-
-    example:
-    Input:
-    for para in parameter_generator([1,2], (True, False), {"vowels" : "aeiou", "even":[2,4]}):
-        print("para:", para)
-
-    Output:
-
-    para: [1, True, {'vowels': 'a', 'even': 2}]
-    para: [1, True, {'vowels': 'a', 'even': 4}]
-    para: [1, True, {'vowels': 'e', 'even': 2}]
-    para: [1, True, {'vowels': 'e', 'even': 4}]
-    .
-    .
-    para: [2, True, {'vowels': 'u', 'even': 4}]
-    para: [2, True, {'vowels': 'o', 'even': 2}]
-    para: [2, True, {'vowels': 'u', 'even': 4}]
-
-    The order of returned parameter depends on the order they were given. 
-    Dictionary arguments get back dictionary results with a single value in its respective key.
-    """
-    parameters = []
-    parameter_keys = []
-    # Argument preprocessing
-    for arg in args:
-        if isinstance(arg, dict):
-            parameters.append(product(*arg.values()))
-            parameter_keys.append(arg.keys())
-        else:
-            parameters.append(arg)
-            parameter_keys.append(None)
-
-    for parameter_values in product(*parameters):
-        result = [val if keys is None else dict(zip(keys, val)) for keys, val in zip(parameter_keys, parameter_values)]
-        yield result
-
-
 def get_configuration(config_file):
     """
     Loads configuration file and returns its data as dict
@@ -138,6 +111,10 @@ def get_configuration(config_file):
                    "others": others}
     return config_dict
 
+def random_seed_gen(num):
+    for _ in range(num):
+        yield np.random.randint(0, 100)
+
 
 def parse_args():
     """
@@ -147,24 +124,23 @@ def parse_args():
     """
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
-    arg_parser.add_argument("--log_file", help="Log file", type=str, default=None)
+    arg_parser.add_argument("--seed_num", help="Random seed number", type=int, default=1)
     arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
-    arg_parser.add_argument("--config_file", help="INI Config file", type=str, default=None)
-    arg_parser.add_argument("--plot_result", help="Plot result in matplotlib", type=boolean_string, default=False)
     arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to test", type=str, default=None)
     arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
     arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=0)
     arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=True)
-    arg_parser.add_argument("--display_every", help="Display information on every given epoch", type=int, default=10)
+    arg_parser.add_argument("--display_interval", help="Display information on every given epoch", type=int, default=10)
+    arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
+    arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
+    arg_parser.add_argument("--buffer", help="Replay buffer name", type=str, default="replay_buffer")
+    arg_parser.add_argument("--goal_trials", help="Number of trials (epochs) to compute goal", type=int, default=100)
+    arg_parser.add_argument("--goal_reward", help="Minimum goal reward value", type=float, default=200.0)
+
     _args = arg_parser.parse_args()
     # Default summary directory, log file and config file
     date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
     env_name = _args.env_name
-    assert (env_name in VALID_ENVS), "Invalid environment received! Enter one of the followings:\n{}".format(VALID_ENVS)
     if _args.summ_dir is None:
         _args.summ_dir = os.path.join("summaries", "{} {}".format(env_name, date_time))
-    if _args.log_file is None:
-        _args.log_file = os.path.join(_args.summ_dir, "log", "Results {} {}.log".format(env_name, date_time))
-    if _args.config_file is None:
-        _args.config_file = os.path.join("config", "{}.ini".format(env_name))
     return _args
