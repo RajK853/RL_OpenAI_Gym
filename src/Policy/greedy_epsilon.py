@@ -1,5 +1,5 @@
 import numpy as np
-from .BasePolicy import BasePolicy
+from .base_policy import BasePolicy
 
 
 class GreedyEpsilonPolicy(BasePolicy):

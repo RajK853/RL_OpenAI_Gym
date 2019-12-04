@@ -1,6 +1,6 @@
 import numpy as np
-from .RLAlgorithm import RLAlgorithm
-from src.Utils import normalize_array
+from .rl_algorithm import RLAlgorithm
+from src.utils import normalize_array
 
 
 class PolicyGradient(RLAlgorithm):

@@ -2,7 +2,7 @@ import numpy as np
 from time import time
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
-from src.Utils import get_space_size, dict2str
+from src.utils import get_space_size, dict2str
 
 
 class RLAlgorithm:
@@ -38,6 +38,7 @@ class RLAlgorithm:
         self.goals_achieved = 0
         self.first_goal = (None, None)
         self.max_mean_reward = (-1, -1000)
+        self.mean_reward = 0
         # Epoch variables
         self.epoch_reward = 0
         self.transition = None
@@ -137,7 +138,7 @@ class RLAlgorithm:
             None
         """
         self.hook_before_train(epochs=epochs)
-        mode_string = f"{'Training' if self.training else 'Testing'} agent. Please be patient..."
+        mode_string = f"{'Training' if self.training else 'Testing'} agent. Please be patient... "
         print(mode_string, end="\r")
         t0 = time()
         for self.epoch in range(1, epochs + 1):
@@ -150,7 +151,7 @@ class RLAlgorithm:
             if not self.epoch % self.display_interval:  # Display epoch information
                 t = time() - t0  # Measure time difference from previous display
                 print(f"Epoch: {self.epoch}, mean_losses: {estimator_mean_loss:.4f}, {policy_mean_loss:.4f}, "
-                      f"total_reward: {self.epoch_reward}, in {t:.4f} secs")
+                      f"total_reward: {self.epoch_reward:.4f}, in {t:.4f} secs")
                 print(mode_string, end="\r")
                 t0 = time()
             # Log summaries to display in Tensorboard
@@ -199,8 +200,8 @@ class RLAlgorithm:
         logger.info(f"Goals achieved: {num_goals:<20}")
         if num_goals:
             logger.info(
-                    f"First goal achieved: {first_goal_reward:.2f} mean reward at {first_goal_epoch} epoch.")
-        logger.info(f"Max goal achieved: {max_goal_reward:.2f} mean reward at {max_goal_epoch} epoch.\n")
+                f"First goal achieved: {first_goal_reward:.4f} mean reward at {first_goal_epoch} epoch.")
+        logger.info(f"Max goal achieved: {max_goal_reward:.4f} mean reward at {max_goal_epoch} epoch.\n")
 
     def _init_diagnostics(self):
         pass
@@ -210,7 +211,7 @@ class RLAlgorithm:
 
     def hook_before_train(self, **kwargs):
         assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
-        print(f"Goal: Get average reward of {self.goal_reward:.2f} over {self.goal_trials} consecutive trials!")
+        print(f"Goal: Get average reward of {self.goal_reward:.4f} over {self.goal_trials} consecutive trials!")
 
     def hook_before_epoch(self, **kwargs):
         self.epoch_reward = 0.0
@@ -232,19 +233,18 @@ class RLAlgorithm:
 
     def hook_after_epoch(self, **kwargs):
         if len(self.epoch_rewards) >= self.goal_trials:
-            mean_reward = np.mean(self.epoch_rewards[-self.goal_trials:])
-            solved = (mean_reward >= self.goal_reward)
-            if solved:
+            self.mean_reward = np.mean(self.epoch_rewards[-self.goal_trials:])
+            if self.mean_reward >= self.goal_reward:
                 if self.first_goal[0] is None:
-                     self.first_goal = (self.epoch, mean_reward)
+                    self.first_goal = (self.epoch, self.mean_reward)
                 self.goals_achieved += 1
-            if mean_reward > self.max_mean_reward[1]:
-                self.max_mean_reward = (self.epoch, mean_reward)
+            if self.mean_reward > self.max_mean_reward[1]:
+                self.max_mean_reward = (self.epoch, self.mean_reward)
 
     def hook_after_train(self, **kwargs):
-        print(f"############# Goal Summary ############\nNumber of achieved goals: {self.goals_achieved}")
+        print(f"\n############# Goal Summary ############\nNumber of achieved goals: {self.goals_achieved}")
         if self.goals_achieved:
-            print(f"First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]}")
+            print(f"First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]:.4f}")
         trials = self.goal_trials
         epoch, reward = self.max_mean_reward
-        print(f"Max mean reward over {trials} trials achieved at epoch {epoch} with reward {reward}")
+        print(f"Max mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.4f}")

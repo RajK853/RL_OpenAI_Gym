@@ -1,6 +1,6 @@
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
-from .NeuralNetwork import NeuralNetwork
+from .neural_network import NeuralNetwork
 
 
 class QNetwork(NeuralNetwork):

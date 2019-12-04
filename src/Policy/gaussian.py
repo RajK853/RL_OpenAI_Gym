@@ -4,7 +4,7 @@ import tensorflow.compat.v1 as tf_v1
 from gym.spaces import Box
 
 from src.Layer import NeuralNetwork
-from .BasePolicy import BasePolicy
+from .base_policy import BasePolicy
 
 
 class GaussianPolicy(BasePolicy):

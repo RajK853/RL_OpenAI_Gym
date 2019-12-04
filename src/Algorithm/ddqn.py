@@ -1,6 +1,6 @@
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
-from .DQN import DQN
+from .dqn import DQN
 from src.Layer import QNetwork
 
 

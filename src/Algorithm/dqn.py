@@ -1,5 +1,5 @@
 import numpy as np
-from .RLAlgorithm import RLAlgorithm
+from .rl_algorithm import RLAlgorithm
 from src.Layer import QNetwork
 
 

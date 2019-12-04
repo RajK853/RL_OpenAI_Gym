@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
 
 from src.Layer import NeuralNetwork
-from src.Utils import get_space_size
+from src.utils import get_space_size
 
 
 class BasePolicy:

@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from .ReplayBuffer import ReplayBuffer
+from .replay_buffer import ReplayBuffer
 
 
 class PrioritizedReplayBuffer(ReplayBuffer):

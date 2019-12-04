@@ -3,8 +3,8 @@ import gym
 from datetime import datetime
 import tensorflow.compat.v1 as tf_v1
 # Custom modules
-from src.Utils import parse_args, random_seed_gen
-from src.Config import get_configuration, get_algorithm_from_variant, get_buffer_from_variant, get_policy_from_variant
+from src.utils import parse_args, random_seed_gen
+from src.config import get_configuration, get_algorithm_from_variant, get_buffer_from_variant, get_policy_from_variant
 
 
 def run(env, seed, model_i, *, summary_dir, cmd_args, config, sess_config=None):
@@ -17,16 +17,14 @@ def run(env, seed, model_i, *, summary_dir, cmd_args, config, sess_config=None):
         model_i (int) : Model index
         sess_config (tf_v1.ConfigProto) : Tensorflow configuration protocol for Session object
     """
-    env.seed(int(seed))
+    env.seed(seed)
     model_name = f"Model {model_i}"
     # Create summary directory
     model_summary_dir = os.path.join(summary_dir, model_name)
     training = cmd_args.test_model_chkpt is None
     with tf_v1.Session(config=sess_config) as sess:
-        # TODO: Policy and algorithm hardcoded
         buffer = get_buffer_from_variant(config)
         policy = get_policy_from_variant(env, config)
-        # TODO: Parameters hardcoded
         algo = get_algorithm_from_variant(sess, env, policy, buffer, model_summary_dir, config)
         sess.run(tf_v1.global_variables_initializer())
         if training:
