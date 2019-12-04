@@ -2,10 +2,8 @@ import os
 import logging
 import argparse
 import numpy as np
-import configparser
 from importlib import reload
 from datetime import datetime
-
 from gym.spaces import Box, Discrete
 
 VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
@@ -14,7 +12,6 @@ VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
 def get_space_size(space):
     if isinstance(space, Box):
         return np.prod(space.shape, axis=0)
-
     elif isinstance(space, Discrete):
         return space.n
     else:
@@ -39,9 +36,9 @@ def dict2str(feed_dict, sep=", "):
     dict_strs = []
     for key, value in feed_dict.items():
         if isinstance(value, (np.float, np.float16, np.float32, np.float64)):
-            dict_strs.append("{}:{:.3f}".format(key, value))
+            dict_strs.append(f"{key}:{value:.3f}")
         else:
-            dict_strs.append("{}:{}".format(key, value))
+            dict_strs.append(f"{key}:{value}")
     return sep.join(dict_strs)
 
 
@@ -53,7 +50,7 @@ def get_logger(log_file):
     returns:
         logging.Logger : Logger object 
     """
-    reload(logging)  # Due to issue with creating root logger in Notebook
+    reload(logging)                             # Due to issue with creating root logger in Notebook
     logging.basicConfig(level=logging.DEBUG,
                         format="%(message)s",
                         datefmt="%m-%d %H:%M",
@@ -86,30 +83,8 @@ def boolean_string(s):
     s = s.lower()
     if s not in ('false', 'true'):
         raise ValueError('Not a valid boolean string')
-    return (s == 'true')
+    return s == 'true'
 
-
-def get_configuration(config_file):
-    """
-    Loads configuration file and returns its data as dict
-    args:
-        config_file (str) : INI Configuration file address
-    returns:
-        dict : Configuration data as dictionary
-    """
-    config_parser = configparser.ConfigParser()
-    config_parser.read(config_file)
-    # Load configurations from config file
-    init_kwargs = eval_dict_values(config_parser["init_kwargs"])
-    log_init_kwargs = eval_dict_values(config_parser["log_init_kwargs"])
-    train_kwargs = eval_dict_values(config_parser["train_kwargs"])
-    log_train_kwargs = eval_dict_values(config_parser["log_train_kwargs"])
-    others = eval_dict_values(config_parser["others"])
-    # Prepare configuration dictionary
-    config_dict = {"kwargs": (init_kwargs, train_kwargs),
-                   "log_kwargs": (log_init_kwargs, log_train_kwargs),
-                   "others": others}
-    return config_dict
 
 def random_seed_gen(num):
     for _ in range(num):
@@ -142,5 +117,5 @@ def parse_args():
     date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
     env_name = _args.env_name
     if _args.summ_dir is None:
-        _args.summ_dir = os.path.join("summaries", "{} {}".format(env_name, date_time))
+        _args.summ_dir = os.path.join("summaries", f"{env_name} {date_time}")
     return _args
