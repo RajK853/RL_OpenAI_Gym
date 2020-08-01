@@ -4,7 +4,7 @@ from .base_policy import BasePolicy
 
 class GreedyEpsilonPolicy(BasePolicy):
 
-    def __init__(self, *, eps_range, eps_decay, explore_ratio=1, explore_exploit_interval=20, **kwargs):
+    def __init__(self, *, eps_range, eps_decay=0.01, explore_ratio=0.60, explore_exploit_interval=20, **kwargs):
         super(GreedyEpsilonPolicy, self).__init__(**kwargs)
         self.max_eps, self.min_eps = eps_range
         self.eps_decay = eps_decay
@@ -37,7 +37,7 @@ class GreedyEpsilonPolicy(BasePolicy):
             self._eps = max(self.min_eps, self._eps * np.math.e**(-self.eps_decay))
             self.last_epoch = epoch
 
-    def action(self, sess, states, **kwargs):
+    def _action(self, sess, states, **kwargs):
         """
         Get actions for given states from the given estimator
         args:
@@ -47,8 +47,6 @@ class GreedyEpsilonPolicy(BasePolicy):
         """
         actions = []
         estimator = kwargs["estimator"]
-        if len(states.shape) == len(self.obs_shape):
-            states = states.reshape(1, *self.obs_shape)
         for state in states:
             if np.random.random() < self.eps:
                 actions.append(self.action_space.sample())
@@ -60,5 +58,3 @@ class GreedyEpsilonPolicy(BasePolicy):
     def hook_after_action(self, **kwargs):
         self.update_eps(kwargs["epoch"])
 
-    def get_diagnostic(self):
-        return {"eps": self.eps}
