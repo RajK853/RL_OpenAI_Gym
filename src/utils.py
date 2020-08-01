@@ -18,6 +18,13 @@ def get_space_size(space):
         raise NotImplementedError(f"Invalid space of type '{type(space)}'!")
 
 
+def standardize_array(array):
+    mean_value = np.mean(array)
+    std_value = np.std(array)
+    std_value = std_value if std_value > 0 else 1
+    return (array-mean_value)/std_value
+
+
 def normalize_array(array):
     max_value = max(array)
     min_value = min(array)
@@ -107,15 +114,16 @@ def parse_args():
     arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=True)
     arg_parser.add_argument("--display_interval", help="Display information on every given epoch", type=int, default=10)
     arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
+    # TODO: 1) Remove policy, display_interval. 2) Rename seed_num. 3) Load goal information from a csv.
+    #  4) Update csv with best hyper-parameter values
     arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
     arg_parser.add_argument("--buffer", help="Replay buffer name", type=str, default="replay_buffer")
     arg_parser.add_argument("--goal_trials", help="Number of trials (epochs) to compute goal", type=int, default=100)
     arg_parser.add_argument("--goal_reward", help="Minimum goal reward value", type=float, default=200.0)
 
     _args = arg_parser.parse_args()
-    # Default summary directory, log file and config file
-    date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
     env_name = _args.env_name
     if _args.summ_dir is None:
+        date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
         _args.summ_dir = os.path.join("summaries", f"{env_name} {date_time}")
     return _args
