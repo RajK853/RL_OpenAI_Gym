@@ -1,14 +1,16 @@
 import numpy as np
-from time import time
-import tensorflow as tf
+from time import perf_counter
 import tensorflow.compat.v1 as tf_v1
+from collections import deque
+
+from src.progressbar import ProgressBar
 from src.utils import get_space_size, dict2str
 
 
 class RLAlgorithm:
 
-    def __init__(self, *, sess, env, policy, replay_buffer, batch_size, summary_dir, render, training=True,
-                 goal_trials, goal_reward, display_interval, **kwargs):
+    def __init__(self, *, sess, env, policy, replay_buffer, batch_size, render, summary_dir=None, training=True,
+                 goal_trials, goal_reward, display_interval):
         self.env = env
         self.policy = policy
         self.action_space = env.action_space
@@ -21,14 +23,12 @@ class RLAlgorithm:
         self.replay_buffer = replay_buffer
         self.display_interval = display_interval
         # Setup summaries
+        self.tag = f"{self.env.spec.id}"
         self.summary_dir = summary_dir
         if summary_dir is None:
             self.summary_writer = None
         else:
             self.summary_writer = tf_v1.summary.FileWriter(summary_dir, sess.graph)
-        self.summaries = self.setup_summaries()
-        self.epoch = 0
-        self.steps = 0
         self._saver = None
         self.training = training
         # Goal variables
@@ -40,11 +40,19 @@ class RLAlgorithm:
         self.max_mean_reward = (-1, -1000)
         self.mean_reward = 0
         # Epoch variables
+        self.steps = 0
+        self.epoch = 0
+        self.epoch_length = 0
         self.epoch_reward = 0
         self.transition = None
-        self.epoch_info = {}
-        self._estimator_losses = []
-        self._policy_losses = []
+        self.process_action = None
+        self.summary_init_objects = (self.policy, )
+        self.scalar_summaries = ("epoch_reward", "epoch_length")
+        self.histogram_summaries = ()
+
+    def init_summaries(self):
+        for obj in self.summary_init_objects:
+            obj.init_summaries(tag=self.tag)
 
     @property
     def obs_shape(self):
@@ -60,46 +68,18 @@ class RLAlgorithm:
             self._saver = tf_v1.train.Saver(max_to_keep=10)
         return self._saver
 
-    # TODO: How to handle different metrics of different environment? Max, mean and min of all?
-    def setup_summaries(self):
-        """
-        Setup the summary placeholders and their scalars Tensors
-        args:
-            None
-        returns:
-            Tensor : Tensor with all summary scalars merged into
-        """
-        summaries = []
-        with tf.name_scope("Performance_Summary_{}".format(self.env.spec.id)):
-            self.epoch_reward_ph = tf_v1.placeholder(tf.float32, name="epoch_reward_ph")
-            self.epoch_estimator_avg_loss_ph = tf_v1.placeholder(tf.float32, name="epoch_estimator_avg_loss_ph")
-            self.epoch_policy_avg_loss_ph = tf_v1.placeholder(tf.float32, name="epoch_policy_avg_loss_ph")
-            self.epoch_eps_ph = tf_v1.placeholder(tf.float32, name="epoch_eps_ph")
-            epoch_reward_summary = tf_v1.summary.scalar("epoch_reward", self.epoch_reward_ph)
-            epoch_estimator_avg_loss_summary = tf_v1.summary.scalar("epoch_estimator_avg_loss",
-                                                                    self.epoch_estimator_avg_loss_ph)
-            epoch_policy_avg_loss_summary = tf_v1.summary.scalar("epoch_policy_avg_loss", self.epoch_policy_avg_loss_ph)
-            epoch_eps_summary = tf_v1.summary.scalar("epoch_eps", self.epoch_eps_ph)
-            # TODO: Get summaries from algorithm, policy and env
-            summaries.extend([epoch_estimator_avg_loss_summary, epoch_policy_avg_loss_summary, epoch_reward_summary,
-                              epoch_eps_summary])
-        return tf_v1.summary.merge(summaries)
-
-    def get_summaries(self, feed_dict):
-        """
-        Executes summary op
-        args:
-            feed_dict (dict) : Feed dictionary as {self.epoch_reward_ph:epoch_reward,..., self.epoch_eps_ph:epoch_eps}
-        returns:
-            tf_v1.Summary: Summary protocol buffer
-        """
-        summaries = self.sess.run(self.summaries, feed_dict=feed_dict)
-        return summaries
-
     def action(self, sess, states, **kwargs):
-        if states.shape == self.obs_shape:
-            states = states.reshape(1, *self.obs_shape)
         return self.policy.action(sess, states, **kwargs)
+
+    def step(self, state):
+        self.hook_before_step()
+        raw_action = self.action(self.sess, state, training=self.training)
+        action = self.process_action(raw_action)
+        next_state, reward, done, info = self.env.step(action)
+        self.transition = (state, action, reward, next_state, int(done))
+        self.epoch_reward += reward
+        self.hook_after_step()
+        return next_state, done
 
     def _run_once(self):
         """
@@ -114,56 +94,41 @@ class RLAlgorithm:
             (float, float, float) : Mean loss, total reward and maximum position of the current epoch
         """
         self.hook_before_epoch()
-        done = False
+        done = 0
         state = self.env.reset()
         while not done:
-            self.hook_before_step()
-            action = self.action(self.sess, state, training=self.training)[0]
-            next_state, reward, done, info = self.env.step(action)
-            self.transition = (state, action, reward, next_state, done)
+            state, done = self.step(state)
             if self.render:
                 self.env.render()
-            self.epoch_reward += reward
-            state = next_state
-            self.steps += 1
-            self.hook_after_step()
         self.hook_at_epoch_end()
 
-    def run(self, epochs):
+    def run(self, total_epochs):
         """
         Runs the simulation for several epochs
         args:
-            epochs (int) : Total number of epochs
-        returns:
-            None
+            total_epochs (int) : Total number of epochs
         """
-        self.hook_before_train(epochs=epochs)
-        mode_string = f"{'Training' if self.training else 'Testing'} agent. Please be patient... "
-        print(mode_string, end="\r")
-        t0 = time()
-        for self.epoch in range(1, epochs + 1):
+
+        self.hook_before_train(epochs=total_epochs)
+        mode_string = f"  {'Training' if self.training else 'Testing'} agent:"
+        pbar = ProgressBar(total_iter=total_epochs, display_text=mode_string)
+        timing_queue = deque(maxlen=50)
+        start_time = perf_counter()
+        for self.epoch in range(1, total_epochs + 1):
+            t0 = perf_counter()
             self._run_once()
-            # TODO: Make it not hardcoded later
-            estimator_mean_loss = self.epoch_info["estimator_mean_loss"]
-            policy_mean_loss = self.epoch_info["policy_mean_loss"]
-            epoch_eps = self.epoch_info["eps"]
             self.hook_after_epoch()
-            if not self.epoch % self.display_interval:  # Display epoch information
-                t = time() - t0  # Measure time difference from previous display
-                print(f"Epoch: {self.epoch}, mean_losses: {estimator_mean_loss:.4f}, {policy_mean_loss:.4f}, "
-                      f"total_reward: {self.epoch_reward:.4f}, in {t:.4f} secs")
-                print(mode_string, end="\r")
-                t0 = time()
-            # Log summaries to display in Tensorboard
-            if self.summary_writer is not None:
-                # TODO: Add goal information to the summary like goal achieved, goal reward?
-                # TODO: Preparing feed_dict for the summary
-                feed_dict = {self.epoch_reward_ph: self.epoch_reward,
-                             self.epoch_estimator_avg_loss_ph: estimator_mean_loss,
-                             self.epoch_policy_avg_loss_ph: policy_mean_loss, self.epoch_eps_ph: epoch_eps}
-                summary = self.get_summaries(feed_dict)
-                self.summary_writer.add_summary(summary, self.epoch)
-        print("{:<50}".format(""), end="\r")
+            t1 = perf_counter()
+            dt = t1-t0
+            timing_queue.append(dt)
+            mean_time_per_epoch = np.mean(timing_queue)
+            time_left_sec = (total_epochs - self.epoch)*mean_time_per_epoch
+            time_left_minute = time_left_sec/60
+            elapsed_time_sec = t1-start_time
+            elapsed_time_minute = elapsed_time_sec/60
+            time_info_text = f"[Mean time per epoch: {mean_time_per_epoch:3.1f} seconds, " \
+                             f"Elapsed time: {elapsed_time_minute:3.1f} minutes, ETA: {time_left_minute:3.1f} minutes]"
+            pbar.step(add_text=time_info_text)
         self.hook_after_train()
 
     def save_model(self, chkpt_dir):
@@ -197,39 +162,65 @@ class RLAlgorithm:
         num_goals, first_goal, max_goal = goal_summary
         first_goal_epoch, first_goal_reward = first_goal
         max_goal_epoch, max_goal_reward = max_goal
-        logger.info(f"Goals achieved: {num_goals:<20}")
+        logger.info(f"  Goals achieved: {num_goals:<20}")
         if num_goals:
-            logger.info(
-                f"First goal achieved: {first_goal_reward:.4f} mean reward at {first_goal_epoch} epoch.")
-        logger.info(f"Max goal achieved: {max_goal_reward:.4f} mean reward at {max_goal_epoch} epoch.\n")
+            logger.info(f"  First goal achieved: {first_goal_reward:.3f} mean reward at {first_goal_epoch} epoch.")
+        logger.info(f"  Max goal achieved: {max_goal_reward:.3f} mean reward at {max_goal_epoch} epoch.\n")
 
-    def _init_diagnostics(self):
-        pass
+    def write_summary(self, name, **kwargs):
+        summary = tf_v1.Summary(value=[tf_v1.Summary.Value(tag=name, **kwargs)])
+        self.summary_writer.add_summary(summary, self.epoch)
 
-    def get_diagnostics(self):
-        pass
+    def add_summaries(self):
+        def get_histogram(values):
+            counts, bin_edges = np.histogram(attr)
+            # Fill fields of histogram proto
+            hist = tf_v1.HistogramProto()
+            hist.min = float(np.min(attr))
+            hist.max = float(np.max(attr))
+            hist.num = int(np.prod(attr.shape))
+            hist.sum = float(np.sum(attr))
+            hist.sum_squares = float(np.sum(attr ** 2))
+            bin_edges = bin_edges[1:]
+            hist.bucket_limit = bin_edges
+            hist.bucket = counts
+            return hist
+
+        if self.summary_writer is not None:
+            for summary_attr in self.scalar_summaries:
+                attr = getattr(self, summary_attr)
+                self.write_summary(f"{self.tag}/{summary_attr}", simple_value=attr)
+            for summary_attr in self.histogram_summaries:
+                attr = np.array(getattr(self, summary_attr))
+                hist = get_histogram(attr)
+                self.write_summary(f"{self.tag}/{summary_attr}", histo=hist)
+            for obj in self.summary_init_objects:
+                summary = getattr(obj, "summary")
+                self.summary_writer.add_summary(summary, self.epoch)
 
     def hook_before_train(self, **kwargs):
         assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
-        print(f"Goal: Get average reward of {self.goal_reward:.4f} over {self.goal_trials} consecutive trials!")
+        print(f"\n# Goal: Get average reward of {self.goal_reward:.3f} over {self.goal_trials} consecutive trials!")
+        sample_action = self.env.action_space.sample()
+        if isinstance(sample_action, np.ndarray):
+            self.process_action = lambda a: np.array([np.squeeze(a)]) if len(sample_action) == 1 else np.squeeze(a)
+        else:
+            self.process_action = lambda a: np.squeeze(a).item()
+        self.init_summaries()
 
     def hook_before_epoch(self, **kwargs):
         self.epoch_reward = 0.0
+        self.epoch_length = 0
 
     def hook_before_step(self, **kwargs):
-        pass
+        self.steps += 1
+        self.epoch_length += 1
 
     def hook_after_step(self, **kwargs):
         pass
 
     def hook_at_epoch_end(self, **kwargs):
         self.epoch_rewards.append(self.epoch_reward)
-        estimator_mean_loss = np.mean(self._estimator_losses) if self._estimator_losses else 0.0
-        policy_mean_loss = np.mean(self._policy_losses) if self._policy_losses else 0.0
-        policy_diagnostic = self.policy.get_diagnostic()
-        self.epoch_info.update({"estimator_mean_loss": estimator_mean_loss,
-                                "policy_mean_loss": policy_mean_loss},
-                               **policy_diagnostic)
 
     def hook_after_epoch(self, **kwargs):
         if len(self.epoch_rewards) >= self.goal_trials:
@@ -242,9 +233,10 @@ class RLAlgorithm:
                 self.max_mean_reward = (self.epoch, self.mean_reward)
 
     def hook_after_train(self, **kwargs):
-        print(f"\n############# Goal Summary ############\nNumber of achieved goals: {self.goals_achieved}")
+        print(f"\n# Goal Summary")
+        print(f"  Number of achieved goals: {self.goals_achieved}")
         if self.goals_achieved:
-            print(f"First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]:.4f}")
+            print(f"  First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]:.3f}")
         trials = self.goal_trials
         epoch, reward = self.max_mean_reward
-        print(f"Max mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.4f}")
+        print(f"  Best mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.3f}")
