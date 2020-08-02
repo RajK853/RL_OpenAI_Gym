@@ -1,4 +1,5 @@
 from .rl_algorithm import RLAlgorithm
 from .dqn import DQN
-from .policy_gradient import PolicyGradient
 from .ddqn import DDQN
+from .reinforce import Reinforce
+from .a2c import A2C
