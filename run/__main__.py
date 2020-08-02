@@ -2,9 +2,15 @@ import os
 import gym
 from datetime import datetime
 import tensorflow.compat.v1 as tf_v1
+from tensorflow.python.util import deprecation
 # Custom modules
 from src.utils import parse_args, random_seed_gen
 from src.config import get_configuration, get_algorithm_from_variant, get_buffer_from_variant, get_policy_from_variant
+
+deprecation._PRINT_DEPRECATION_WARNINGS = False
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memory_fraction=0.5),
+                              allow_soft_placement=True)
 
 
 def run(env, seed, model_i, *, summary_dir, cmd_args, config, sess_config=None):
@@ -17,27 +23,27 @@ def run(env, seed, model_i, *, summary_dir, cmd_args, config, sess_config=None):
         model_i (int) : Model index
         sess_config (tf_v1.ConfigProto) : Tensorflow configuration protocol for Session object
     """
+    info_text = ("  Training information are available via Tensorboard with the given command:\n"
+                 "  tensorboard --logdir summaries --host localhost")
     env.seed(seed)
     model_name = f"Model {model_i}"
-    # Create summary directory
-    model_summary_dir = os.path.join(summary_dir, model_name)
     training = cmd_args.test_model_chkpt is None
+    model_summary_dir = os.path.join(summary_dir, model_name) if training else None
     with tf_v1.Session(config=sess_config) as sess:
         buffer = get_buffer_from_variant(config)
         policy = get_policy_from_variant(env, config)
-        algo = get_algorithm_from_variant(sess, env, policy, buffer, model_summary_dir, config)
+        algo = get_algorithm_from_variant(sess, env, policy, buffer, model_summary_dir, training, config)
         sess.run(tf_v1.global_variables_initializer())
         if training:
             print("\n# Training: {}".format(model_name))
+            if training:
+                print(info_text)
         else:
             print("\n# Testing: {}".format(cmd_args.test_model_chkpt))
-            algo.restore_model(cmd_args.test_model_chkpt)                       # Restore model variables
-        # Run the algorithm for given epochs
-        algo.run(epochs=cmd_args.epochs)
-        if training:
-            # Save model as checkpoint
+            algo.restore_model(cmd_args.test_model_chkpt)          # Restore model variables
+        algo.run(total_epochs=cmd_args.epochs)                     # Run the algorithm for given epochs
+        if training:                                               # Save trained model as checkpoint
             algo.save_model(os.path.join(model_summary_dir, "model.chkpt"))
-    # Clear replay buffer and tensorflow graph
     buffer.clear()
     tf_v1.reset_default_graph()
     # TODO: Which informations to log?
@@ -46,9 +52,6 @@ def run(env, seed, model_i, *, summary_dir, cmd_args, config, sess_config=None):
     # algo.log(logger, model_name, parameter_dict, goal_summary)
 
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memory_fraction=0.5),
-                              allow_soft_placement=True)
 if __name__ == "__main__":
     date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
     cmd_args = parse_args()
@@ -57,7 +60,8 @@ if __name__ == "__main__":
     # Wrap environment to record videos
     if cmd_args.record_interval > 0:
         env = gym.wrappers.Monitor(env, os.path.join(summary_dir, "videos"), force=True,
-                                   video_callable=lambda epoch: not epoch % cmd_args.record_interval)
+                                   video_callable=lambda epoch: (not epoch % cmd_args.record_interval) or
+                                                                (epoch == cmd_args.epochs-1))
     config_dict = get_configuration(cmd_args)
     # Run model
     for model_i, seed in enumerate(random_seed_gen(cmd_args.seed_num), start=1):
