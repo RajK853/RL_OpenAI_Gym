@@ -126,8 +126,8 @@ class RLAlgorithm:
             time_left_minute = time_left_sec/60
             elapsed_time_sec = t1-start_time
             elapsed_time_minute = elapsed_time_sec/60
-            time_info_text = f"[Mean time per epoch: {mean_time_per_epoch:3.1f} seconds, " \
-                             f"Elapsed time: {elapsed_time_minute:3.1f} minutes, ETA: {time_left_minute:3.1f} minutes]"
+            time_info_text = f"[Mean time per epoch: {mean_time_per_epoch:3.2f} seconds, " \
+                             f"Elapsed time: {elapsed_time_minute:3.2f} minutes, ETA: {time_left_minute:3.2f} minutes]"
             pbar.step(add_text=time_info_text)
         self.hook_after_train()
 
@@ -173,14 +173,14 @@ class RLAlgorithm:
 
     def add_summaries(self):
         def get_histogram(values):
-            counts, bin_edges = np.histogram(attr)
+            counts, bin_edges = np.histogram(values)
             # Fill fields of histogram proto
             hist = tf_v1.HistogramProto()
-            hist.min = float(np.min(attr))
-            hist.max = float(np.max(attr))
-            hist.num = int(np.prod(attr.shape))
-            hist.sum = float(np.sum(attr))
-            hist.sum_squares = float(np.sum(attr ** 2))
+            hist.min = float(np.min(values))
+            hist.max = float(np.max(values))
+            hist.num = int(np.prod(values.shape))
+            hist.sum = float(np.sum(values))
+            hist.sum_squares = float(np.sum(values ** 2))
             bin_edges = bin_edges[1:]
             hist.bucket_limit = bin_edges
             hist.bucket = counts
@@ -196,7 +196,8 @@ class RLAlgorithm:
                 self.write_summary(f"{self.tag}/{summary_attr}", histo=hist)
             for obj in self.summary_init_objects:
                 summary = getattr(obj, "summary")
-                self.summary_writer.add_summary(summary, self.epoch)
+                if summary:
+                    self.summary_writer.add_summary(summary, self.epoch)
 
     def hook_before_train(self, **kwargs):
         assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
