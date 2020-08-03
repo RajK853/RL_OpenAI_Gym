@@ -1,9 +1,9 @@
 import copy
-import tensorflow as tf
+import tensorflow.compat.v1 as tf_v1
 from tensorflow.keras.regularizers import l2
 
-from src.Policy import GreedyEpsilonPolicy, GaussianPolicy, DiscretePolicy
-from src.Algorithm import DQN, DDQN, Reinforce, A2C
+from src.Policy import GreedyEpsilonPolicy, GaussianPolicy, DiscretePolicy, ContinuousPolicy
+from src.Algorithm import DQN, DDQN, Reinforce, ActorCritic, Sarsa, DDPG
 from src.Buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 ALGO_LEARNING_RATE = 1e-4
@@ -49,8 +49,10 @@ Gaussian = {
         "alpha": 2e-4,
         "lr": POLICY_LEARNING_RATE,
         "layer_units": (50, 50),
-        "activation": tf.nn.relu,
-        "kernel_regularizer": l2(1e-6),
+        "layer_kwargs": {
+            "activation": tf_v1.nn.relu,
+            "kernel_regularizer": l2(1e-6),
+        }
     }
 }
 
@@ -59,8 +61,21 @@ Discrete = {
     "kwargs": {
         "lr": POLICY_LEARNING_RATE,
         "layer_units": (50, 50),
-        "activation": tf.nn.relu,
-        "kernel_regularizer": l2(1e-6),
+        "layer_kwargs": {
+            "activation": tf_v1.nn.relu,
+            "kernel_regularizer": l2(1e-6),
+        }
+    }
+}
+
+Continuous = {
+    "function": ContinuousPolicy,
+    "kwargs": {
+        **Discrete["kwargs"],
+        "sigma": 0.1,           # Noise parameter = sigma * random.uniform(-1, 1)
+        "output_kwargs": {
+            "activation": tf_v1.nn.tanh,
+        }
     }
 }
 
@@ -68,6 +83,7 @@ POLICIES = {
     "greedy_epsilon": GreedyEpsilon,
     "gaussian": Gaussian,
     "discrete": Discrete,
+    "continuous": Continuous,
 }
 
 # Algorithms
@@ -75,13 +91,31 @@ _DQN = {
     "function": DQN,
     "kwargs": {
         "lr": 0.989,
-        "df": 0.996,
+        "gamma": 0.996,
+        "layer_units": (50, 50),
+    }
+}
+
+_Sarsa = {
+    "function": Sarsa,
+    "kwargs": {
+        "lr": 0.989,
+        "gamma": 0.996,
         "layer_units": (50, 50),
     }
 }
 
 _DDQN = {
     "function": DDQN,
+    "kwargs": {
+        **_DQN["kwargs"],
+        "tau": 0.1,
+        "update_interval": 100,
+    }
+}
+
+_DDPG = {
+    "function": DDPG,
     "kwargs": {
         **_DQN["kwargs"],
         "tau": 0.01,
@@ -97,8 +131,8 @@ _Reinforce = {
     }
 }
 
-_A2C = {
-    "function": A2C,
+_ActorCritic = {
+    "function": ActorCritic,
     "kwargs": {
         **_Reinforce["kwargs"]
     }
@@ -108,7 +142,9 @@ ALGORITHMS = {
     "dqn": _DQN,
     "ddqn": _DDQN,
     "reinforce": _Reinforce,
-    "a2c": _A2C,
+    "actor_critic": _ActorCritic,
+    "sarsa": _Sarsa,
+    "ddpg": _DDPG,
 }
 
 
