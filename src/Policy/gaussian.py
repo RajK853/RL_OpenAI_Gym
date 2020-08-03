@@ -19,18 +19,15 @@ class GaussianPolicy(BasePolicy):
         assert not self.discrete_action_space, "Action space for the Gaussian Policy must be continuous!"
         self.actions_ph = tf_v1.placeholder(tf.float32, shape=(None, *self.action_shape), name="action_ph")
         self.target_ph = tf_v1.placeholder(tf.float32, shape=(None,), name="target_ph")
-        with tf_v1.variable_scope(self.scope):
-            self.network = NeuralNetwork(name=self.scope, input_shape=self.obs_shape, layer_units=layer_units,
-                                         output_size=2*self.action_size, **kwargs)
-            # Split mean and std from the final layer
-            mu = self.network.output[:, :self.action_size]
-            mu = tf_v1.clip_by_value(mu, self.action_space.low, self.action_space.high)
-            log_std = self.network.output[:, self.action_size:]
-            log_std = tf_v1.clip_by_value(log_std, MIN_LOG_STD, MAX_LOG_STD)
-            norm_dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=tf_v1.exp(log_std))
-            # bijector = tfp.bijectors.Affine(shift=mu, scale_diag=tf_v1.exp(log_std))
+        self.network = NeuralNetwork(scope=self.scope, input_shape=self.obs_shape, layer_units=layer_units,
+                                     output_size=2*self.action_size, **kwargs)
+        # Split mean and std from the final layer
+        mu = self.network.output[:, :self.action_size]
+        mu = tf_v1.clip_by_value(mu, self.action_space.low, self.action_space.high)
+        log_std = self.network.output[:, self.action_size:]
+        log_std = tf_v1.clip_by_value(log_std, MIN_LOG_STD, MAX_LOG_STD)
+        norm_dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=tf_v1.exp(log_std))
         sample_action = norm_dist.sample()
-        # sample_action = bijector.forward(norm_dist.sample())
         self.actions = tf.clip_by_value(sample_action, self.action_space.low, self.action_space.high)
         log_loss = norm_dist.log_prob(self.actions_ph)*self.target_ph
         entropy_loss = -self.alpha*norm_dist.entropy()
