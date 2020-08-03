@@ -9,6 +9,10 @@ from gym.spaces import Box, Discrete
 VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
 
 
+def polyak_average(src_value, target_value, tau=0.5):
+    return target_value + tau*(src_value - target_value)
+
+
 def get_space_size(space):
     if isinstance(space, Box):
         return np.prod(space.shape, axis=0)
@@ -110,16 +114,16 @@ def parse_args():
     arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
     arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to test", type=str, default=None)
     arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
-    arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=0)
-    arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=True)
+    arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=10)
+    arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=False)
     arg_parser.add_argument("--display_interval", help="Display information on every given epoch", type=int, default=10)
     arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
-    # TODO: 1) Remove policy, display_interval. 2) Rename seed_num. 3) Load goal information from a csv.
+    # TODO: 1) Remove display_interval. 2) Rename seed_num. 3) Load goal information from a csv.
     #  4) Update csv with best hyper-parameter values
     arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
     arg_parser.add_argument("--buffer", help="Replay buffer name", type=str, default="replay_buffer")
     arg_parser.add_argument("--goal_trials", help="Number of trials (epochs) to compute goal", type=int, default=100)
-    arg_parser.add_argument("--goal_reward", help="Minimum goal reward value", type=float, default=200.0)
+    arg_parser.add_argument("--goal_reward", help="Minimum goal reward value", type=float)
 
     _args = arg_parser.parse_args()
     env_name = _args.env_name
