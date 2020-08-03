@@ -123,7 +123,7 @@ dmypy.json
 .pyre/
 
 # Summary directory
-summaries/
+summaries
 
 # Pycharm coding style
 .idea/
