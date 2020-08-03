@@ -8,6 +8,7 @@ from src.utils import get_space_size, dict2str
 
 
 class RLAlgorithm:
+    VALID_POLICIES = []
 
     def __init__(self, *, sess, env, policy, replay_buffer, batch_size, render, summary_dir=None, training=True,
                  goal_trials, goal_reward, display_interval):
@@ -49,6 +50,12 @@ class RLAlgorithm:
         self.summary_init_objects = (self.policy, )
         self.scalar_summaries = ("epoch_reward", "epoch_length")
         self.histogram_summaries = ()
+
+    def validate_policy(self):
+        policy_type = self.policy.__class__.__name__
+        algo_type = self.__class__.__name__
+        assert len(self.VALID_POLICIES) == 0 or policy_type in self.VALID_POLICIES, \
+            f"{algo_type} only supports '{self.VALID_POLICIES}' and not {policy_type}!"
 
     def init_summaries(self):
         for obj in self.summary_init_objects:
