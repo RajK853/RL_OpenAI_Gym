@@ -21,8 +21,8 @@ class QNetwork(NeuralNetwork):
         super(QNetwork, self).__init__(scope, input_shape=input_shape, output_size=output_size, **kwargs)
         # Placeholders for targets
         self.targets_ph = tf_v1.placeholder(shape=[None, output_size], dtype=tf.float32, name=f"{scope}_targets")
-        self.action_predictions = self.output
-        self.loss = tf_v1.losses.mean_squared_error(self.targets_ph, self.action_predictions)
+        self.predictions = self.output
+        self.loss = tf_v1.losses.mean_squared_error(self.targets_ph, self.predictions)
         self.train_op = tf_v1.train.AdamOptimizer(learning_rate=lr).minimize(self.loss, var_list=self.trainable_vars)
         # Summary parameters
         self.summary_op = None
