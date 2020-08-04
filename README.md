@@ -2,6 +2,11 @@
 # Reinforcement Learning - OpenAI Gym
 Repository to solve the OpenAI Gym RL [environments](https://github.com/openai/gym/wiki/Table-of-environments) using different Reinforcement Learning algorithms.
 
+|    |    |  
+| ------------- | ------------- |  
+| <img src="assets/CartPoleV0_Sarsa.gif" width="350" height="200" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/LunarLanderV2_DDQN.gif" width="350" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
+| <img src="assets/MountainCarV0_DDQN.gif" width="350" height="200" title="MountainCar-v0 using DDQN algorithm"/>  | <img src="assets/AcrobotV1_DDQN.gif" width="350" height="200" title="Acrobot-v1 using DDQN algorithm"/>  |
+ 
 # Requirements:
 - OS: Windows 10/Ubuntu 18.04
 - Python 3.7
@@ -20,11 +25,6 @@ conda activate open_ai_gym
 ## Usage:
 Read the documentation provided in [here](run/README.md) for training and testing procedures.  
 
-|    |   |  
-| ------------- | ------------- |  
-| <img src="assets/CartPoleV0_Sarsa.gif" width="350" height="200" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/LunarLanderV2_DDQN.gif" width="350" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
-| <img src="assets/MountainCarV0_DDQN.gif" width="350" height="200" title="MountainCar-v0 using DDQN algorithm"/>  | <img src="assets/AcrobotV1_DDQN.gif" width="350" height="200" title="Acrobot-v1 using DDQN algorithm"/>  |
- 
 ## TODO:
 - ~~Complete code for Gaussian policy for continuous action space.~~
 - Add support for different replay buffers; PER, HER, etc.
