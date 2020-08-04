@@ -9,7 +9,6 @@ class DDPG(RLAlgorithm):
 
     def __init__(self, *, lr, gamma, tau, update_interval, layer_units, **kwargs):
         super(DDPG, self).__init__(**kwargs)
-        self.validate_policy()
         self.lr = lr
         self.tau = tau
         self.gamma = gamma

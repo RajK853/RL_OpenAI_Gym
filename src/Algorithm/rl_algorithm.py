@@ -50,6 +50,7 @@ class RLAlgorithm:
         self.summary_init_objects = (self.policy, )
         self.scalar_summaries = ("epoch_reward", "epoch_length")
         self.histogram_summaries = ()
+        self.validate_policy()
 
     def validate_policy(self):
         policy_type = self.policy.__class__.__name__

@@ -8,7 +8,6 @@ class DQN(RLAlgorithm):
 
     def __init__(self, *, gamma, lr, layer_units=None, **kwargs):
         super(DQN, self).__init__(**kwargs)
-        self.validate_policy()
         self.gamma = gamma
         self.lr = lr
         self.layer_units = layer_units or (50, 50, 50)
