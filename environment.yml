@@ -1,4 +1,4 @@
-name: base
+name: open_ai_gym
 channels:
   - conda-forge
   - defaults
