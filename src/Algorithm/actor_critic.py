@@ -4,13 +4,14 @@ from src.Layer import QNetwork
 
 
 class ActorCritic(Reinforce):
+    VALID_POLICIES = ("DiscretePolicy", "GaussianPolicy")
 
     def __init__(self, **kwargs):
         super(ActorCritic, self).__init__(**kwargs)
         self.critic = QNetwork(self.obs_shape, output_size=1, layer_units=(50, 50), scope="critic")
         self.mean_critic_loss = None
         self.summary_init_objects += (self.critic, )
-        self.scalar_summaries += ("critic_loss", )
+        self.scalar_summaries += ("mean_critic_loss", )
 
     def calculate_advantage(self, states, rewards):
         discounted_return = self.compute_discounted_return(rewards)
@@ -29,7 +30,10 @@ class ActorCritic(Reinforce):
                                          for _ in range(self.num_train)])
 
     def train(self):
-        states, actions, rewards = self.sample_trajectory()
+        trajectory = self.sample_trajectory()
+        states = trajectory["state"]
+        actions = trajectory["action"]
+        rewards = trajectory["reward"]
         advantage = self.calculate_advantage(states, rewards)
         self.train_actor(states, actions, advantage)
         self.train_critic(states, advantage)
