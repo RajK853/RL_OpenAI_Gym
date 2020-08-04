@@ -22,7 +22,7 @@ Read the documentation provided in [here](run/README.md) for training and testin
 
 |    |   |  
 | ------------- | ------------- |  
-| <img src="assets/CartPoleV0_Sarsa.gif" width="260" height="200" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/LunarLanderV2_DDQN.gif" width="260" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
+| <img src="assets/CartPoleV0_Sarsa.gif" width="260" height="300" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/LunarLanderV2_DDQN.gif" width="300" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
  
 ## TODO:
 - ~~Complete code for Gaussian policy for continuous action space.~~
