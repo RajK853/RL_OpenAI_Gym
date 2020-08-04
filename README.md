@@ -5,7 +5,7 @@ Repository to solve the OpenAI Gym RL [environments](https://github.com/openai/g
 |    |    |  
 | ------------- | ------------- |  
 | <img src="assets/CartPoleV0_Sarsa.gif" width="350" height="200" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/LunarLanderV2_DDQN.gif" width="350" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
-| <img src="assets/MountainCarV0_DDQN.gif" width="350" height="200" title="MountainCar-v0 using DDQN algorithm"/>  | <img src="assets/AcrobotV1_DDQN.gif" width="350" height="200" title="Acrobot-v1 using DDQN algorithm"/>  |
+| <img src="assets/MountainCarV0_DDQN.gif" width="350" height="200" title="MountainCar-v0 using DDQN algorithm"/>  | <img src="assets/BipedalWalkerV2_DDPG.gif" width="350" height="200" title="BipedalWalker-v2 using DDPG algorithm"/>  |
  
 # Requirements:
 - OS: Windows 10/Ubuntu 18.04
