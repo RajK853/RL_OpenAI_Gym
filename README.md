@@ -19,7 +19,10 @@ conda activate open_ai_gym
 
 ## Usage:
 Read the documentation provided in [here](run/README.md) for training and testing procedures.  
-<img src="assets/CartPoleV0_Sarsa.gif" width="200" height="150" title="CartPole-v0 using SARSA algorithm"/>
+
+|    |   |  
+| ------------- | ------------- |  
+| <img src="assets/CartPoleV0_Sarsa.gif" width="260" height="200" title="CartPole-v0 using SARSA algorithm"/>  | <img src="assets/CartPoleV0_Sarsa.gif" width="260" height="200" title="LunarLander-v2 using DDQN algorithm"/>  |
  
 ## TODO:
 - ~~Complete code for Gaussian policy for continuous action space.~~
