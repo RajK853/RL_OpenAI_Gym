@@ -4,6 +4,7 @@ from src.utils import standardize_array
 
 
 class Reinforce(RLAlgorithm):
+    VALID_POLICIES = {"DiscretePolicy", "GaussianPolicy"}
 
     def __init__(self, *, gamma=0.99, num_train=1, **kwargs):
         super(Reinforce, self).__init__(**kwargs)

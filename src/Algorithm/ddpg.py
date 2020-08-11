@@ -26,7 +26,7 @@ class DDPG(RLAlgorithm):
 
     def init_actor_loss(self):
         loss = -self.critic(tf_v1.concat([self.policy.network.input, self.policy.network.output], axis=-1))
-        self.policy.init_loss(loss)
+        self.policy.set_loss(loss)
 
     def train_actor(self, sess, states):
         feed_dict = {self.policy.network.input: states}

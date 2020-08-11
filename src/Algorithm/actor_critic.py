@@ -4,7 +4,6 @@ from src.Layer import QNetwork
 
 
 class ActorCritic(Reinforce):
-    VALID_POLICIES = ("DiscretePolicy", "GaussianPolicy")
 
     def __init__(self, **kwargs):
         super(ActorCritic, self).__init__(**kwargs)
