@@ -13,29 +13,41 @@ MAX_LOG_STD = 2
 
 class GaussianPolicy(BasePolicy):
 
-    def __init__(self, *, layer_units, alpha=1e-1, lr=1e-3, **kwargs):
+    def __init__(self, *, layer_units, alpha=1e-1, lr=1e-3, init_def_loss=True, **kwargs):
         super(GaussianPolicy, self).__init__(env=kwargs.pop("env"))
         self.alpha = alpha
+        self.lr = lr
+        self.init_def_loss = init_def_loss
         assert not self.discrete_action_space, "Action space for the Gaussian Policy must be continuous!"
         self.actions_ph = tf_v1.placeholder(tf.float32, shape=(None, *self.action_shape), name="action_ph")
         self.target_ph = tf_v1.placeholder(tf.float32, shape=(None,), name="target_ph")
         self.network = NeuralNetwork(scope=self.scope, input_shape=self.obs_shape, layer_units=layer_units,
                                      output_size=2*self.action_size, **kwargs)
         # Split mean and std from the final layer
-        mu = self.network.output[:, :self.action_size]
-        mu = tf_v1.clip_by_value(mu, self.action_space.low, self.action_space.high)
-        log_std = self.network.output[:, self.action_size:]
-        log_std = tf_v1.clip_by_value(log_std, MIN_LOG_STD, MAX_LOG_STD)
-        norm_dist = tfp.distributions.MultivariateNormalDiag(loc=mu, scale_diag=tf_v1.exp(log_std))
-        sample_action = norm_dist.sample()
+        self.mu = self.network.output[:, :self.action_size]
+        self.mu = tf_v1.clip_by_value(self.mu, self.action_space.low, self.action_space.high)
+        self.log_std = self.network.output[:, self.action_size:]
+        self.log_std = tf_v1.clip_by_value(self.log_std, MIN_LOG_STD, MAX_LOG_STD)
+        self.norm_dist = tfp.distributions.MultivariateNormalDiag(loc=self.mu, scale_diag=tf_v1.exp(self.log_std))
+        sample_action = self.norm_dist.sample()
         self.actions = tf.clip_by_value(sample_action, self.action_space.low, self.action_space.high)
-        log_loss = norm_dist.log_prob(self.actions_ph)*self.target_ph
-        entropy_loss = -self.alpha*norm_dist.entropy()
-        self.loss = log_loss + entropy_loss
-        # Optimizer Parameters
-        self.optimizer = tf_v1.train.AdamOptimizer(learning_rate=lr)
-        self.train_op = self.optimizer.minimize(self.loss, var_list=self.network.trainable_vars)
+
+        self._loss = None
+        self.train_op = None
+        if self.init_def_loss:
+            self.init_default_loss()
         self.scalar_summaries += ("mean_loss", )
+
+    def init_default_loss(self):
+        log_loss = self.norm_dist.log_prob(self.actions_ph) * self.target_ph
+        entropy_loss = -self.alpha * self.norm_dist.entropy()
+        loss = log_loss + entropy_loss
+        self.set_loss(loss=loss)
+
+    def set_loss(self, loss, optimizer=None):
+        self._loss = loss
+        optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr) if optimizer is None else optimizer
+        self.train_op = optimizer.minimize(self._loss, var_list=self.network.trainable_vars)
 
     @property
     def mean_loss(self):
