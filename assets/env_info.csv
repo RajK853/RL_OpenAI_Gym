@@ -1,0 +1,777 @@
+Environment Id,Observation Space,Action Space,Reward Range,tStepL,Trials,rThresh
+MountainCar-v0,"Box(2,)",Discrete(3),"(-inf, inf)",200,100,-110.0
+MountainCarContinuous-v0,"Box(2,)","Box(1,)","(-inf, inf)",999,100,90.0
+Pendulum-v0,"Box(3,)","Box(1,)","(-inf, inf)",200,100,None
+CartPole-v0,"Box(4,)",Discrete(2),"(-inf, inf)",200,100,195.0
+CartPole-v1,"Box(4,)",Discrete(2),"(-inf, inf)",500,100,475.0
+Acrobot-v1,"Box(6,)",Discrete(3),"(-inf, inf)",500,100,-100.0
+LunarLander-v2,"Box(8,)",Discrete(4),"(-inf, inf)",1000,100,200
+LunarLanderContinuous-v2,"Box(8,)","Box(2,)","(-inf, inf)",1000,100,200
+MemorizeDigits-v0,"Box(24, 32, 3)",Discrete(10),"(-inf, inf)",None,100,20
+BipedalWalker-v2,"Box(24,)","Box(4,)","(-inf, inf)",1600,100,300
+BipedalWalkerHardcore-v2,"Box(24,)","Box(4,)","(-inf, inf)",2000,100,300
+CubeCrash-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
+CubeCrashSparse-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
+CubeCrashScreenBecomesBlack-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
+CarRacing-v0,"Box(96, 96, 3)","Box(3,)","(-inf, inf)",1000,100,900
+Adventure-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Adventure-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Adventure-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Adventure-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Adventure-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Adventure-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+AirRaid-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+AirRaid-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaid-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaid-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaid-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+AirRaid-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Alien-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Alien-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Alien-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Alien-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Alien-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Alien-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Amidar-ram-v0,"Box(128,)",Discrete(10),"(-inf, inf)",10000,100,None
+Amidar-ram-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+Amidar-ramDeterministic-v0,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+Amidar-ramDeterministic-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+Amidar-ramNoFrameskip-v0,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+Amidar-ramNoFrameskip-v4,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+Assault-ram-v0,"Box(128,)",Discrete(7),"(-inf, inf)",10000,100,None
+Assault-ram-v4,"Box(128,)",Discrete(7),"(-inf, inf)",100000,100,None
+Assault-ramDeterministic-v0,"Box(128,)",Discrete(7),"(-inf, inf)",100000,100,None
+Assault-ramDeterministic-v4,"Box(128,)",Discrete(7),"(-inf, inf)",100000,100,None
+Assault-ramNoFrameskip-v0,"Box(128,)",Discrete(7),"(-inf, inf)",400000,100,None
+Assault-ramNoFrameskip-v4,"Box(128,)",Discrete(7),"(-inf, inf)",400000,100,None
+Asterix-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+Asterix-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Asterix-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Asterix-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Asterix-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+Asterix-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+Asteroids-ram-v0,"Box(128,)",Discrete(14),"(-inf, inf)",10000,100,None
+Asteroids-ram-v4,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+Asteroids-ramDeterministic-v0,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+Asteroids-ramDeterministic-v4,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+Asteroids-ramNoFrameskip-v0,"Box(128,)",Discrete(14),"(-inf, inf)",400000,100,None
+Asteroids-ramNoFrameskip-v4,"Box(128,)",Discrete(14),"(-inf, inf)",400000,100,None
+Atlantis-ram-v0,"Box(128,)",Discrete(4),"(-inf, inf)",10000,100,None
+Atlantis-ram-v4,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Atlantis-ramDeterministic-v0,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Atlantis-ramDeterministic-v4,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Atlantis-ramNoFrameskip-v0,"Box(128,)",Discrete(4),"(-inf, inf)",400000,100,None
+Atlantis-ramNoFrameskip-v4,"Box(128,)",Discrete(4),"(-inf, inf)",400000,100,None
+BankHeist-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+BankHeist-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeist-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeist-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeist-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+BankHeist-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+BattleZone-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+BattleZone-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZone-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZone-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZone-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+BattleZone-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+BeamRider-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+BeamRider-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRider-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRider-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRider-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+BeamRider-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+Berzerk-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Berzerk-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Berzerk-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Berzerk-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Berzerk-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Berzerk-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Bowling-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+Bowling-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Bowling-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Bowling-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Bowling-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Bowling-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Boxing-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Boxing-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Boxing-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Boxing-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Boxing-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Boxing-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Breakout-ram-v0,"Box(128,)",Discrete(4),"(-inf, inf)",10000,100,None
+Breakout-ram-v4,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Breakout-ramDeterministic-v0,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Breakout-ramDeterministic-v4,"Box(128,)",Discrete(4),"(-inf, inf)",100000,100,None
+Breakout-ramNoFrameskip-v0,"Box(128,)",Discrete(4),"(-inf, inf)",400000,100,None
+Breakout-ramNoFrameskip-v4,"Box(128,)",Discrete(4),"(-inf, inf)",400000,100,None
+Carnival-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+Carnival-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Carnival-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Carnival-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Carnival-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Carnival-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Centipede-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Centipede-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Centipede-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Centipede-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Centipede-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Centipede-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+ChopperCommand-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+ChopperCommand-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommand-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommand-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommand-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+ChopperCommand-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+CrazyClimber-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+CrazyClimber-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimber-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimber-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimber-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+CrazyClimber-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+Defender-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Defender-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Defender-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Defender-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Defender-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Defender-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+DemonAttack-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+DemonAttack-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttack-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttack-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttack-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+DemonAttack-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+DoubleDunk-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+DoubleDunk-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunk-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunk-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunk-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+DoubleDunk-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+ElevatorAction-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+ElevatorAction-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorAction-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorAction-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorAction-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+ElevatorAction-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Enduro-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+Enduro-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Enduro-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Enduro-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+Enduro-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+Enduro-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+FishingDerby-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+FishingDerby-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerby-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerby-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerby-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+FishingDerby-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Freeway-ram-v0,"Box(128,)",Discrete(3),"(-inf, inf)",10000,100,None
+Freeway-ram-v4,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Freeway-ramDeterministic-v0,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Freeway-ramDeterministic-v4,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Freeway-ramNoFrameskip-v0,"Box(128,)",Discrete(3),"(-inf, inf)",400000,100,None
+Freeway-ramNoFrameskip-v4,"Box(128,)",Discrete(3),"(-inf, inf)",400000,100,None
+Frostbite-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Frostbite-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Frostbite-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Frostbite-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Frostbite-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Frostbite-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Gopher-ram-v0,"Box(128,)",Discrete(8),"(-inf, inf)",10000,100,None
+Gopher-ram-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Gopher-ramDeterministic-v0,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Gopher-ramDeterministic-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Gopher-ramNoFrameskip-v0,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+Gopher-ramNoFrameskip-v4,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+Gravitar-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Gravitar-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Gravitar-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Gravitar-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Gravitar-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Gravitar-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Hero-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Hero-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Hero-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Hero-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Hero-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Hero-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+IceHockey-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+IceHockey-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockey-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockey-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockey-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+IceHockey-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Jamesbond-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Jamesbond-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Jamesbond-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Jamesbond-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Jamesbond-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Jamesbond-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+JourneyEscape-ram-v0,"Box(128,)",Discrete(16),"(-inf, inf)",10000,100,None
+JourneyEscape-ram-v4,"Box(128,)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscape-ramDeterministic-v0,"Box(128,)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscape-ramDeterministic-v4,"Box(128,)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscape-ramNoFrameskip-v0,"Box(128,)",Discrete(16),"(-inf, inf)",400000,100,None
+JourneyEscape-ramNoFrameskip-v4,"Box(128,)",Discrete(16),"(-inf, inf)",400000,100,None
+Kangaroo-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Kangaroo-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Kangaroo-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Kangaroo-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Kangaroo-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Kangaroo-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Krull-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Krull-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Krull-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Krull-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Krull-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Krull-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+KungFuMaster-ram-v0,"Box(128,)",Discrete(14),"(-inf, inf)",10000,100,None
+KungFuMaster-ram-v4,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMaster-ramDeterministic-v0,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMaster-ramDeterministic-v4,"Box(128,)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMaster-ramNoFrameskip-v0,"Box(128,)",Discrete(14),"(-inf, inf)",400000,100,None
+KungFuMaster-ramNoFrameskip-v4,"Box(128,)",Discrete(14),"(-inf, inf)",400000,100,None
+MontezumaRevenge-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+MontezumaRevenge-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevenge-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevenge-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevenge-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+MontezumaRevenge-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+MsPacman-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+MsPacman-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacman-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacman-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacman-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+MsPacman-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+NameThisGame-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+NameThisGame-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGame-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGame-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGame-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+NameThisGame-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Phoenix-ram-v0,"Box(128,)",Discrete(8),"(-inf, inf)",10000,100,None
+Phoenix-ram-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Phoenix-ramDeterministic-v0,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Phoenix-ramDeterministic-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Phoenix-ramNoFrameskip-v0,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+Phoenix-ramNoFrameskip-v4,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+Pitfall-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Pitfall-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Pitfall-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Pitfall-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Pitfall-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Pitfall-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Pong-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+Pong-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pong-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pong-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pong-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Pong-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Pooyan-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+Pooyan-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pooyan-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pooyan-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Pooyan-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Pooyan-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+PrivateEye-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+PrivateEye-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEye-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEye-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEye-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+PrivateEye-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Qbert-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+Qbert-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Qbert-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Qbert-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+Qbert-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Qbert-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Riverraid-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Riverraid-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Riverraid-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Riverraid-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Riverraid-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Riverraid-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+RoadRunner-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+RoadRunner-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunner-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunner-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunner-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+RoadRunner-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Robotank-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Robotank-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Robotank-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Robotank-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Robotank-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Robotank-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Seaquest-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Seaquest-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Seaquest-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Seaquest-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Seaquest-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Seaquest-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Skiing-ram-v0,"Box(128,)",Discrete(3),"(-inf, inf)",10000,100,None
+Skiing-ram-v4,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Skiing-ramDeterministic-v0,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Skiing-ramDeterministic-v4,"Box(128,)",Discrete(3),"(-inf, inf)",100000,100,None
+Skiing-ramNoFrameskip-v0,"Box(128,)",Discrete(3),"(-inf, inf)",400000,100,None
+Skiing-ramNoFrameskip-v4,"Box(128,)",Discrete(3),"(-inf, inf)",400000,100,None
+Solaris-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Solaris-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Solaris-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Solaris-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Solaris-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Solaris-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+SpaceInvaders-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+SpaceInvaders-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvaders-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvaders-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvaders-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",300000,100,None
+SpaceInvaders-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",300000,100,None
+StarGunner-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+StarGunner-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunner-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunner-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunner-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+StarGunner-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Tennis-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Tennis-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Tennis-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Tennis-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Tennis-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Tennis-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+TimePilot-ram-v0,"Box(128,)",Discrete(10),"(-inf, inf)",10000,100,None
+TimePilot-ram-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilot-ramDeterministic-v0,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilot-ramDeterministic-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilot-ramNoFrameskip-v0,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+TimePilot-ramNoFrameskip-v4,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+Tutankham-ram-v0,"Box(128,)",Discrete(8),"(-inf, inf)",10000,100,None
+Tutankham-ram-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Tutankham-ramDeterministic-v0,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Tutankham-ramDeterministic-v4,"Box(128,)",Discrete(8),"(-inf, inf)",100000,100,None
+Tutankham-ramNoFrameskip-v0,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+Tutankham-ramNoFrameskip-v4,"Box(128,)",Discrete(8),"(-inf, inf)",400000,100,None
+UpNDown-ram-v0,"Box(128,)",Discrete(6),"(-inf, inf)",10000,100,None
+UpNDown-ram-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDown-ramDeterministic-v0,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDown-ramDeterministic-v4,"Box(128,)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDown-ramNoFrameskip-v0,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+UpNDown-ramNoFrameskip-v4,"Box(128,)",Discrete(6),"(-inf, inf)",400000,100,None
+Venture-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Venture-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Venture-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Venture-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Venture-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Venture-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+VideoPinball-ram-v0,"Box(128,)",Discrete(9),"(-inf, inf)",10000,100,None
+VideoPinball-ram-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinball-ramDeterministic-v0,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinball-ramDeterministic-v4,"Box(128,)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinball-ramNoFrameskip-v0,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+VideoPinball-ramNoFrameskip-v4,"Box(128,)",Discrete(9),"(-inf, inf)",400000,100,None
+WizardOfWor-ram-v0,"Box(128,)",Discrete(10),"(-inf, inf)",10000,100,None
+WizardOfWor-ram-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWor-ramDeterministic-v0,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWor-ramDeterministic-v4,"Box(128,)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWor-ramNoFrameskip-v0,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+WizardOfWor-ramNoFrameskip-v4,"Box(128,)",Discrete(10),"(-inf, inf)",400000,100,None
+YarsRevenge-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+YarsRevenge-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevenge-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevenge-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevenge-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+YarsRevenge-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Zaxxon-ram-v0,"Box(128,)",Discrete(18),"(-inf, inf)",10000,100,None
+Zaxxon-ram-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Zaxxon-ramDeterministic-v0,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Zaxxon-ramDeterministic-v4,"Box(128,)",Discrete(18),"(-inf, inf)",100000,100,None
+Zaxxon-ramNoFrameskip-v0,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Zaxxon-ramNoFrameskip-v4,"Box(128,)",Discrete(18),"(-inf, inf)",400000,100,None
+Alien-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Alien-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AlienDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AlienDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AlienNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+AlienNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Asterix-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+Asterix-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+AsterixDeterministic-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+AsterixDeterministic-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+AsterixNoFrameskip-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+AsterixNoFrameskip-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+Asteroids-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",10000,100,None
+Asteroids-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+AsteroidsDeterministic-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+AsteroidsDeterministic-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+AsteroidsNoFrameskip-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",400000,100,None
+AsteroidsNoFrameskip-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",400000,100,None
+Atlantis-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",10000,100,None
+Atlantis-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+AtlantisDeterministic-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+AtlantisDeterministic-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+AtlantisNoFrameskip-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",400000,100,None
+AtlantisNoFrameskip-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",400000,100,None
+BattleZone-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+BattleZone-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZoneDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZoneDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BattleZoneNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+BattleZoneNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+BeamRider-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+BeamRider-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRiderDeterministic-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRiderDeterministic-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+BeamRiderNoFrameskip-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+BeamRiderNoFrameskip-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+Berzerk-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Berzerk-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BerzerkDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BerzerkDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BerzerkNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+BerzerkNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Bowling-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+Bowling-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+BowlingDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+BowlingDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+BowlingNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+BowlingNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Boxing-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Boxing-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BoxingDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BoxingDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BoxingNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+BoxingNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Breakout-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",10000,100,None
+Breakout-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+BreakoutDeterministic-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+BreakoutDeterministic-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",100000,100,None
+BreakoutNoFrameskip-v0,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",400000,100,None
+BreakoutNoFrameskip-v4,"Box(210, 160, 3)",Discrete(4),"(-inf, inf)",400000,100,None
+ChopperCommand-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+ChopperCommand-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommandDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommandDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ChopperCommandNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+ChopperCommandNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+CrazyClimber-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+CrazyClimber-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimberDeterministic-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimberDeterministic-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+CrazyClimberNoFrameskip-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+CrazyClimberNoFrameskip-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+Defender-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Defender-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DefenderDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DefenderDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DefenderNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+DefenderNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+DemonAttack-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+DemonAttack-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttackDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttackDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+DemonAttackNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+DemonAttackNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+ElevatorAction-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+ElevatorAction-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorActionDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorActionDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ElevatorActionNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+ElevatorActionNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Enduro-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+Enduro-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+EnduroDeterministic-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+EnduroDeterministic-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+EnduroNoFrameskip-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+EnduroNoFrameskip-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+FishingDerby-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+FishingDerby-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerbyDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerbyDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FishingDerbyNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+FishingDerbyNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Freeway-v0,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",10000,100,None
+Freeway-v4,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+FreewayDeterministic-v0,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+FreewayDeterministic-v4,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+FreewayNoFrameskip-v0,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",400000,100,None
+FreewayNoFrameskip-v4,"Box(210, 160, 3)",Discrete(3),"(-inf, inf)",400000,100,None
+Frostbite-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Frostbite-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FrostbiteDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FrostbiteDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+FrostbiteNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+FrostbiteNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Gravitar-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Gravitar-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+GravitarDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+GravitarDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+GravitarNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+GravitarNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Hero-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Hero-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+HeroDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+HeroDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+HeroNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+HeroNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+IceHockey-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+IceHockey-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockeyDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockeyDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+IceHockeyNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+IceHockeyNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Jamesbond-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Jamesbond-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+JamesbondDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+JamesbondDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+JamesbondNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+JamesbondNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Kangaroo-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Kangaroo-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KangarooDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KangarooDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KangarooNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+KangarooNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Krull-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Krull-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KrullDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KrullDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+KrullNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+KrullNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+KungFuMaster-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",10000,100,None
+KungFuMaster-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMasterDeterministic-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMasterDeterministic-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",100000,100,None
+KungFuMasterNoFrameskip-v0,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",400000,100,None
+KungFuMasterNoFrameskip-v4,"Box(210, 160, 3)",Discrete(14),"(-inf, inf)",400000,100,None
+MontezumaRevenge-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+MontezumaRevenge-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevengeDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevengeDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+MontezumaRevengeNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+MontezumaRevengeNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+MsPacman-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+MsPacman-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacmanDeterministic-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacmanDeterministic-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+MsPacmanNoFrameskip-v0,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+MsPacmanNoFrameskip-v4,"Box(210, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+NameThisGame-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+NameThisGame-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGameDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGameDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+NameThisGameNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+NameThisGameNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Phoenix-v0,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",10000,100,None
+Phoenix-v4,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+PhoenixDeterministic-v0,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+PhoenixDeterministic-v4,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+PhoenixNoFrameskip-v0,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+PhoenixNoFrameskip-v4,"Box(210, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+Pitfall-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Pitfall-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PitfallDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PitfallDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PitfallNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+PitfallNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Pong-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+Pong-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PongDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PongDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PongNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+PongNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+PrivateEye-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+PrivateEye-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEyeDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEyeDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+PrivateEyeNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+PrivateEyeNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Qbert-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+Qbert-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+QbertDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+QbertDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+QbertNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+QbertNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Riverraid-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Riverraid-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RiverraidDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RiverraidDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RiverraidNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+RiverraidNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+RoadRunner-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+RoadRunner-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunnerDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunnerDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RoadRunnerNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+RoadRunnerNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Robotank-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Robotank-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RobotankDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RobotankDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+RobotankNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+RobotankNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Seaquest-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Seaquest-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SeaquestDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SeaquestDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SeaquestNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+SeaquestNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Solaris-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Solaris-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SolarisDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SolarisDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+SolarisNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+SolarisNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+SpaceInvaders-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+SpaceInvaders-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvadersDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvadersDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+SpaceInvadersNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",300000,100,None
+SpaceInvadersNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",300000,100,None
+StarGunner-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+StarGunner-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunnerDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunnerDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+StarGunnerNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+StarGunnerNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+TimePilot-v0,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",10000,100,None
+TimePilot-v4,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilotDeterministic-v0,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilotDeterministic-v4,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+TimePilotNoFrameskip-v0,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+TimePilotNoFrameskip-v4,"Box(210, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+UpNDown-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+UpNDown-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDownDeterministic-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDownDeterministic-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+UpNDownNoFrameskip-v0,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+UpNDownNoFrameskip-v4,"Box(210, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Venture-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Venture-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+VentureDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+VentureDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+VentureNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+VentureNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+YarsRevenge-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+YarsRevenge-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevengeDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevengeDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+YarsRevengeNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+YarsRevengeNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Zaxxon-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Zaxxon-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ZaxxonDeterministic-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ZaxxonDeterministic-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+ZaxxonNoFrameskip-v0,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+ZaxxonNoFrameskip-v4,"Box(210, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+JourneyEscape-v0,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",10000,100,None
+JourneyEscape-v4,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscapeDeterministic-v0,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscapeDeterministic-v4,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",100000,100,None
+JourneyEscapeNoFrameskip-v0,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",400000,100,None
+JourneyEscapeNoFrameskip-v4,"Box(230, 160, 3)",Discrete(16),"(-inf, inf)",400000,100,None
+Adventure-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Adventure-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AdventureDeterministic-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AdventureDeterministic-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+AdventureNoFrameskip-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+AdventureNoFrameskip-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+AirRaid-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+AirRaid-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaidDeterministic-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaidDeterministic-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+AirRaidNoFrameskip-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+AirRaidNoFrameskip-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Amidar-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",10000,100,None
+Amidar-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+AmidarDeterministic-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+AmidarDeterministic-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+AmidarNoFrameskip-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+AmidarNoFrameskip-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+Assault-v0,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",10000,100,None
+Assault-v4,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",100000,100,None
+AssaultDeterministic-v0,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",100000,100,None
+AssaultDeterministic-v4,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",100000,100,None
+AssaultNoFrameskip-v0,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",400000,100,None
+AssaultNoFrameskip-v4,"Box(250, 160, 3)",Discrete(7),"(-inf, inf)",400000,100,None
+BankHeist-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+BankHeist-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeistDeterministic-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeistDeterministic-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+BankHeistNoFrameskip-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+BankHeistNoFrameskip-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Carnival-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+Carnival-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+CarnivalDeterministic-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+CarnivalDeterministic-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+CarnivalNoFrameskip-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+CarnivalNoFrameskip-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Centipede-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Centipede-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+CentipedeDeterministic-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+CentipedeDeterministic-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+CentipedeNoFrameskip-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+CentipedeNoFrameskip-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+DoubleDunk-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+DoubleDunk-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunkDeterministic-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunkDeterministic-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+DoubleDunkNoFrameskip-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+DoubleDunkNoFrameskip-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Gopher-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",10000,100,None
+Gopher-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+GopherDeterministic-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+GopherDeterministic-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+GopherNoFrameskip-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+GopherNoFrameskip-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+Pooyan-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",10000,100,None
+Pooyan-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PooyanDeterministic-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PooyanDeterministic-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",100000,100,None
+PooyanNoFrameskip-v0,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+PooyanNoFrameskip-v4,"Box(250, 160, 3)",Discrete(6),"(-inf, inf)",400000,100,None
+Skiing-v0,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",10000,100,None
+Skiing-v4,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+SkiingDeterministic-v0,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+SkiingDeterministic-v4,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",100000,100,None
+SkiingNoFrameskip-v0,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",400000,100,None
+SkiingNoFrameskip-v4,"Box(250, 160, 3)",Discrete(3),"(-inf, inf)",400000,100,None
+Tennis-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",10000,100,None
+Tennis-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+TennisDeterministic-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+TennisDeterministic-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",100000,100,None
+TennisNoFrameskip-v0,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+TennisNoFrameskip-v4,"Box(250, 160, 3)",Discrete(18),"(-inf, inf)",400000,100,None
+Tutankham-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",10000,100,None
+Tutankham-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+TutankhamDeterministic-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+TutankhamDeterministic-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",100000,100,None
+TutankhamNoFrameskip-v0,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+TutankhamNoFrameskip-v4,"Box(250, 160, 3)",Discrete(8),"(-inf, inf)",400000,100,None
+VideoPinball-v0,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",10000,100,None
+VideoPinball-v4,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinballDeterministic-v0,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinballDeterministic-v4,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",100000,100,None
+VideoPinballNoFrameskip-v0,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+VideoPinballNoFrameskip-v4,"Box(250, 160, 3)",Discrete(9),"(-inf, inf)",400000,100,None
+WizardOfWor-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",10000,100,None
+WizardOfWor-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWorDeterministic-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWorDeterministic-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",100000,100,None
+WizardOfWorNoFrameskip-v0,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+WizardOfWorNoFrameskip-v4,"Box(250, 160, 3)",Discrete(10),"(-inf, inf)",400000,100,None
+Roulette-v0,Discrete(1),Discrete(38),"(-inf, inf)",100,100,None
+Reverse-v0,Discrete(3),"Tuple(Discrete(2), Discrete(2), Discrete(2))","(-inf, inf)",200,100,25.0
+ReversedAddition-v0,Discrete(4),"Tuple(Discrete(4), Discrete(2), Discrete(3))","(-inf, inf)",200,100,25.0
+ReversedAddition3-v0,Discrete(4),"Tuple(Discrete(4), Discrete(2), Discrete(3))","(-inf, inf)",200,100,25.0
+GuessingGame-v0,Discrete(4),"Box(1,)","(-inf, inf)",200,100,None
+HotterColder-v0,Discrete(4),"Box(1,)","(-inf, inf)",200,100,None
+NChain-v0,Discrete(5),Discrete(2),"(-inf, inf)",1000,100,None
+Copy-v0,Discrete(6),"Tuple(Discrete(2), Discrete(2), Discrete(5))","(-inf, inf)",200,100,25.0
+RepeatCopy-v0,Discrete(6),"Tuple(Discrete(2), Discrete(2), Discrete(5))","(-inf, inf)",200,100,75.0
+DuplicatedInput-v0,Discrete(6),"Tuple(Discrete(2), Discrete(2), Discrete(5))","(-inf, inf)",200,100,9.0
+FrozenLake-v0,Discrete(16),Discrete(4),"(0, 1)",100,100,0.78
+CliffWalking-v0,Discrete(48),Discrete(4),"(-inf, inf)",None,100,None
+FrozenLake8x8-v0,Discrete(64),Discrete(4),"(0, 1)",200,100,0.99
+Taxi-v2,Discrete(500),Discrete(6),"(-inf, inf)",200,100,8
+KellyCoinflipGeneralized-v0,"Tuple(Box(1,), Discrete(283), Discrete(283), Discrete(283), Box(1,))",Discrete(28800),"(0, 288.0)",None,100,None
+KellyCoinflip-v0,"Tuple(Box(1,), Discrete(301))",Discrete(25000),"(0, 250.0)",None,100,246.61
+Blackjack-v0,"Tuple(Discrete(32), Discrete(11), Discrete(2))",Discrete(2),"(-inf, inf)",None,100,None
