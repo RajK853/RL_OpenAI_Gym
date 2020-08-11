@@ -1,9 +1,6 @@
-import numpy as np
-import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
 from gym.spaces import Discrete
 
-from src.Layer import NeuralNetwork
 from src.utils import get_space_size
 
 
@@ -20,6 +17,13 @@ class BasePolicy:
         self.histogram_summaries = ()
         self.summary_op = None
         self.summary = None
+        self._loss = None
+        self.train_op = None
+
+    @property
+    def loss(self):
+        assert self._loss is not None, "Loss function not initialized!"
+        return self._loss
 
     def reshape_state(self, states):
         if states.shape == self.observation_space.shape:
