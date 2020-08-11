@@ -60,7 +60,7 @@ Discrete = {
     "function": DiscretePolicy,
     "kwargs": {
         "lr": POLICY_LEARNING_RATE,
-        "layer_units": (50, 50),
+        "layer_units": (50, 50, 50),
         "layer_kwargs": {
             "activation": tf_v1.nn.relu,
             "kernel_regularizer": l2(1e-6),
@@ -72,7 +72,7 @@ Continuous = {
     "function": ContinuousPolicy,
     "kwargs": {
         **Discrete["kwargs"],
-        "sigma": 0.1,           # Noise parameter = sigma * random.uniform(-1, 1)
+        "sigma": 0.01,           # Noise parameter = sigma * random.uniform(-1, 1)
         "output_kwargs": {
             "activation": tf_v1.nn.tanh,
         }
@@ -92,7 +92,7 @@ _DQN = {
     "kwargs": {
         "lr": 0.989,
         "gamma": 0.996,
-        "layer_units": (50, 50),
+        "layer_units": (50, 50, 50),
     }
 }
 
@@ -109,8 +109,8 @@ _DDQN = {
     "function": DDQN,
     "kwargs": {
         **_DQN["kwargs"],
-        "tau": 0.1,
-        "update_interval": 100,
+        "tau": 0.01,
+        "update_interval": 1,
     }
 }
 
@@ -127,7 +127,7 @@ _Reinforce = {
     "function": Reinforce,
     "kwargs": {
         "gamma": 0.9,
-        "num_train": 4,
+        "num_train": 2,
     }
 }
 
@@ -153,9 +153,6 @@ def get_configuration(args):
     policy = copy.deepcopy(POLICIES[args.policy])
     algorithm = copy.deepcopy(ALGORITHMS[args.algorithm])
     algorithm["kwargs"].update(render=args.render,
-                               goal_trials=args.goal_trials,
-                               goal_reward=args.goal_reward,
-                               display_interval=args.display_interval,
                                **copy.deepcopy(BASE_CONFIG))
     config_dict = {
         "buffer_param": replay_buffer,
@@ -181,8 +178,8 @@ def get_policy_from_variant(env, variant):
     return func(env=env, **kwargs)
 
 
-def get_algorithm_from_variant(sess, env, policy, buffer, summary_dir, training, variant):
+def get_algorithm_from_variant(sess, env, policy, buffer, summary_dir, training, goal_trials, goal_reward, variant):
     param = variant["algorithm_param"]
     func, kwargs = get_func_and_kwargs_from_param(param)
     return func(sess=sess, env=env, policy=policy, replay_buffer=buffer, summary_dir=summary_dir,
-                training=training, **kwargs)
+                training=training, goal_trials=goal_trials, goal_reward=goal_reward, **kwargs)

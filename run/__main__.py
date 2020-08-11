@@ -5,7 +5,7 @@ from datetime import datetime
 import tensorflow.compat.v1 as tf_v1
 from tensorflow.python.util import deprecation
 # Custom modules
-from src.utils import parse_args, random_seed_gen, get_reward_info
+from src.utils import parse_args, random_seed_gen, get_goal_info
 from src.config import get_configuration, get_algorithm_from_variant, get_buffer_from_variant, get_policy_from_variant
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
@@ -66,7 +66,7 @@ if __name__ == "__main__":
                                                                 (epoch == cmd_args.epochs-1))
     config_dict = get_configuration(cmd_args)
     df = read_csv(env_info_file)
-    goal_info = get_reward_info(df, env_name=cmd_args.env_name)
+    goal_info = get_goal_info(df, env_name=cmd_args.env_name)
     del df
     # Run model
     for model_i, seed in enumerate(random_seed_gen(cmd_args.seed_num), start=1):
