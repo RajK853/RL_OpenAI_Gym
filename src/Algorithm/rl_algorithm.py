@@ -8,10 +8,10 @@ from src.utils import get_space_size, dict2str
 
 
 class RLAlgorithm:
-    VALID_POLICIES = []
+    VALID_POLICIES = {}
 
     def __init__(self, *, sess, env, policy, replay_buffer, batch_size, render, summary_dir=None, training=True,
-                 goal_trials, goal_reward, display_interval):
+                 goal_trials, goal_reward):
         self.env = env
         self.policy = policy
         self.action_space = env.action_space
@@ -22,7 +22,6 @@ class RLAlgorithm:
         self.render = render
         self.batch_size = batch_size
         self.replay_buffer = replay_buffer
-        self.display_interval = display_interval
         # Setup summaries
         self.tag = f"{self.env.spec.id}"
         self.summary_dir = summary_dir
@@ -119,7 +118,7 @@ class RLAlgorithm:
 
         self.hook_before_train(epochs=total_epochs)
         mode_string = f"  {'Training' if self.training else 'Testing'} agent:"
-        pbar = ProgressBar(total_iter=total_epochs, display_text=mode_string)
+        progressbar = ProgressBar(total_iter=total_epochs, display_text=mode_string)
         timing_queue = deque(maxlen=50)
         start_time = perf_counter()
         for self.epoch in range(1, total_epochs + 1):
@@ -136,7 +135,7 @@ class RLAlgorithm:
             elapsed_time_minute = elapsed_time_sec/60
             time_info_text = f"[Mean time per epoch: {mean_time_per_epoch:3.2f} seconds, " \
                              f"Elapsed time: {elapsed_time_minute:3.2f} minutes, ETA: {time_left_minute:3.2f} minutes]"
-            pbar.step(add_text=time_info_text)
+            progressbar.step(add_text=time_info_text)
         self.hook_after_train()
 
     def save_model(self, chkpt_dir):
@@ -149,7 +148,7 @@ class RLAlgorithm:
 
     def restore_model(self, chkpt_dir):
         """
-        Restores varibles to the session
+        Restores variables to the session
         args:
             chkpt_dir (str) : Source directory to restore variables (as checkpoint)
         """
@@ -200,8 +199,8 @@ class RLAlgorithm:
                 self.write_summary(f"{self.tag}/{summary_attr}", simple_value=attr)
             for summary_attr in self.histogram_summaries:
                 attr = np.array(getattr(self, summary_attr))
-                hist = get_histogram(attr)
-                self.write_summary(f"{self.tag}/{summary_attr}", histo=hist)
+                histogram = get_histogram(attr)
+                self.write_summary(f"{self.tag}/{summary_attr}", histo=histogram)
             for obj in self.summary_init_objects:
                 summary = getattr(obj, "summary")
                 if summary:
@@ -209,7 +208,7 @@ class RLAlgorithm:
 
     def hook_before_train(self, **kwargs):
         assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
-        print(f"\n# Goal: Get average reward of {self.goal_reward:.3f} over {self.goal_trials} consecutive trials!")
+        print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
         sample_action = self.env.action_space.sample()
         if isinstance(sample_action, np.ndarray):
             self.process_action = lambda a: np.array([np.squeeze(a)]) if len(sample_action) == 1 else np.squeeze(a)
