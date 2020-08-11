@@ -6,8 +6,6 @@ from importlib import reload
 from datetime import datetime
 from gym.spaces import Box, Discrete
 
-VALID_ENVS = ("CartPole-v0", "LunarLander-v2", "MountainCar-v0")
-
 
 def polyak_average(src_value, target_value, tau=0.5):
     return target_value + tau*(src_value - target_value)
@@ -22,11 +20,12 @@ def get_space_size(space):
         raise NotImplementedError(f"Invalid space of type '{type(space)}'!")
 
 
-def standardize_array(array):
-    mean_value = np.mean(array)
-    std_value = np.std(array)
-    std_value = std_value if std_value > 0 else 1
-    return (array-mean_value)/std_value
+def standardize_array(array, default_std=1e-8):
+    array = np.array(array)
+    std_value = array.std()
+    if std_value <= 0:
+        std_value = default_std
+    return (array-array.mean())/std_value
 
 
 def normalize_array(array):
@@ -61,7 +60,7 @@ def get_logger(log_file):
     returns:
         logging.Logger : Logger object 
     """
-    reload(logging)                             # Due to issue with creating root logger in Notebook
+    reload(logging)                                        # Due to issue with creating root logger in Notebook
     logging.basicConfig(level=logging.DEBUG,
                         format="%(message)s",
                         datefmt="%m-%d %H:%M",
@@ -102,6 +101,14 @@ def random_seed_gen(num):
         yield np.random.randint(0, 100)
 
 
+def get_goal_info(df, env_name):
+    reward_cols = ["Trials", "rThresh"]
+    env_cond = (df.loc[:, "Environment Id"] == env_name)
+    assert any(env_cond), f"{env_name} not found!"
+    goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
+    return int(goal_trials), float(goal_reward)
+
+
 def parse_args():
     """
     Parse arguments from command line
@@ -110,20 +117,16 @@ def parse_args():
     """
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
-    arg_parser.add_argument("--seed_num", help="Random seed number", type=int, default=1)
+    arg_parser.add_argument("--num_exec", help="Number of executions", type=int, default=1)
     arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
-    arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to test", type=str, default=None)
     arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
-    arg_parser.add_argument("--record_interval", help="Record video at given epoch intervals", type=int, default=10)
     arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=False)
-    arg_parser.add_argument("--display_interval", help="Display information on every given epoch", type=int, default=10)
+    arg_parser.add_argument("--record_interval", help="Video record interval (in epoch)", type=int, default=10)
+    arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to evaluate", type=str, default=None)
+    # TODO: 1) Rename seed_num. 3) Update csv with best hyper-parameter values
     arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
-    # TODO: 1) Remove display_interval. 2) Rename seed_num. 3) Load goal information from a csv.
-    #  4) Update csv with best hyper-parameter values
     arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
     arg_parser.add_argument("--buffer", help="Replay buffer name", type=str, default="replay_buffer")
-    arg_parser.add_argument("--goal_trials", help="Number of trials (epochs) to compute goal", type=int, default=100)
-    arg_parser.add_argument("--goal_reward", help="Minimum goal reward value", type=float)
 
     _args = arg_parser.parse_args()
     env_name = _args.env_name
