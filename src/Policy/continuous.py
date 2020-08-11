@@ -26,9 +26,9 @@ class ContinuousPolicy(BasePolicy):
                                 output_size=self.action_size, **self.network_kwargs)
         return network
 
-    def init_loss(self, loss):
+    def set_loss(self, loss, optimizer=None):
         self._loss = loss
-        optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr)
+        optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr) if optimizer is None else optimizer
         self.train_op = optimizer.minimize(self._loss, var_list=self.network.trainable_vars)
 
     @property
