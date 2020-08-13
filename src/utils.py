@@ -115,6 +115,8 @@ def parse_args():
     returns:
          argparse.ArgumentParser : Parsed arguments
     """
+    # TODO: 1) Update csv with best hyper-parameter values, 2) Restoring model does not require algorithm
+    #  or (load env_name, algo, policy from meta data)
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
     arg_parser.add_argument("--num_exec", help="Number of executions", type=int, default=1)
@@ -123,10 +125,8 @@ def parse_args():
     arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=False)
     arg_parser.add_argument("--record_interval", help="Video record interval (in epoch)", type=int, default=10)
     arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to evaluate", type=str, default=None)
-    # TODO: 1) Rename seed_num. 3) Update csv with best hyper-parameter values
     arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
     arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
-    arg_parser.add_argument("--buffer", help="Replay buffer name", type=str, default="replay_buffer")
 
     _args = arg_parser.parse_args()
     env_name = _args.env_name
