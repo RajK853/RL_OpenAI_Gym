@@ -1,6 +1,6 @@
 
-# Reinforcement Learning - OpenAI Gym
-Repository to solve the OpenAI Gym RL [environments](https://github.com/openai/gym/wiki/Table-of-environments) using different Reinforcement Learning algorithms.
+# Reinforcement Learning - OpenAI gym
+Repository to solve the OpenAI gym environments using different Reinforcement Learning algorithms. The goal in each environment is to achieve a certain average threshold reward value for a consecutive 100 trials (epochs). These information about the environments are available in this OpenAI gym wiki [here](https://github.com/openai/gym/wiki/Table-of-environments).
 
 |    |    |  
 | ------------- | ------------- |  
