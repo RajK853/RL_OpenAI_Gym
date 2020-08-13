@@ -49,12 +49,13 @@ class GreedyEpsilonPolicy(BasePolicy):
         estimator = kwargs["estimator"]
         for state in states:
             if np.random.random() < self.eps:
-                actions.append(self.action_space.sample())
+                action = self.action_space.sample()
             else:
                 q_sa_values = estimator.predict(sess, np.array([state]))[0]
-                actions.append(np.argmax(q_sa_values))
+                action = np.argmax(q_sa_values)
+            actions.append(action)
         return actions
 
-    def hook_after_action(self, **kwargs):
+    def hook_after_epoch(self, **kwargs):
         self.update_eps(kwargs["epoch"])
 
