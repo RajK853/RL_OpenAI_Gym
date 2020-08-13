@@ -9,8 +9,8 @@ In the above command:
 * `epochs` (int) : Number of training/testing epochs. Defaults to **1000**. The number of time-steps per epoch depends on the environment. 
 * `render` (boolean) : Option to render every epoch on the display. Defaults to **False**.
 * `record_interval` (int) : Interval (in terms of epoch) to record and save the given epoch as mp4 video. Defaults to **10**. This also renders the recorded epoch on the display.
-* `algorithm` (str) : Name of one of the supported algorithms from [here](../src/Algorithm). It follows *snake_case* naming convention.
-* `policy` (str): Name of one of the supported policies from [here](../src/Policy). It follows *snake_case* naming convention without the prefix *-policy*.
+* `algorithm` (str) : Name of one of the supported algorithms from [here](../src/Algorithm) in *snake_case* naming convention.
+* `policy` (str): Name of one of the supported policies from [here](../src/Policy) in *snake_case* naming convention.
 * `num_exec` (int) : Number of execution of the entire training process with different random seeds. Defaults to **1**.
 
 ***
