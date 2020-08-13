@@ -13,11 +13,10 @@ MAX_LOG_STD = 2
 
 class GaussianPolicy(BasePolicy):
 
-    def __init__(self, *, layer_units, alpha=1e-1, lr=1e-3, init_def_loss=True, **kwargs):
+    def __init__(self, *, layer_units, alpha=1e-3, lr=1e-3, **kwargs):
         super(GaussianPolicy, self).__init__(env=kwargs.pop("env"))
         self.alpha = alpha
         self.lr = lr
-        self.init_def_loss = init_def_loss
         assert not self.discrete_action_space, "Action space for the Gaussian Policy must be continuous!"
         self.actions_ph = tf_v1.placeholder(tf.float32, shape=(None, *self.action_shape), name="action_ph")
         self.target_ph = tf_v1.placeholder(tf.float32, shape=(None,), name="target_ph")
@@ -29,17 +28,17 @@ class GaussianPolicy(BasePolicy):
         self.log_std = self.network.output[:, self.action_size:]
         self.log_std = tf_v1.clip_by_value(self.log_std, MIN_LOG_STD, MAX_LOG_STD)
         self.norm_dist = tfp.distributions.MultivariateNormalDiag(loc=self.mu, scale_diag=tf_v1.exp(self.log_std))
+        self.log_actions = self.norm_dist.log_prob(self.actions_ph)
         sample_action = self.norm_dist.sample()
         self.actions = tf.clip_by_value(sample_action, self.action_space.low, self.action_space.high)
-
+        # Loss parameters
         self._loss = None
         self.train_op = None
-        if self.init_def_loss:
-            self.init_default_loss()
+        # Summary parameters
         self.scalar_summaries += ("mean_loss", )
 
     def init_default_loss(self):
-        log_loss = self.norm_dist.log_prob(self.actions_ph) * self.target_ph
+        log_loss = self.log_actions * self.target_ph
         entropy_loss = -self.alpha * self.norm_dist.entropy()
         loss = log_loss + entropy_loss
         self.set_loss(loss=loss)
@@ -56,6 +55,10 @@ class GaussianPolicy(BasePolicy):
     def _action(self, sess, states, **kwargs):
         actions = sess.run(self.actions, feed_dict={self.network.inputs_ph: states})
         return actions
+
+    def log_action(self, sess, states, actions, **kwargs):
+        log_actions = sess.run(self.log_actions, feed_dict={self.network.inputs_ph: states, self.actions_ph: actions})
+        return log_actions
 
     def update(self, sess, states, actions, **kwargs):
         feed_dict = {self.network.inputs_ph: states, self.actions_ph: actions, self.target_ph: kwargs["targets"]}
