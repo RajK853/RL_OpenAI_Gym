@@ -1,5 +1,5 @@
 import numpy as np
-from .reinforce import Reinforce
+from . import Reinforce
 from src.Layer import QNetwork
 
 
@@ -29,10 +29,7 @@ class ActorCritic(Reinforce):
                                          for _ in range(self.num_train)])
 
     def train(self):
-        trajectory = self.sample_trajectory()
-        states = trajectory["state"]
-        actions = trajectory["action"]
-        rewards = trajectory["reward"]
+        states, actions, rewards = self.sample_trajectory()
         advantage = self.calculate_advantage(states, rewards)
         self.train_actor(states, actions, advantage)
         self.train_critic(states, advantage)
