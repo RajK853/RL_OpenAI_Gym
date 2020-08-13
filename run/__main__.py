@@ -31,10 +31,9 @@ def run(env, seed, model_i, *, summary_dir, cmd_args, goal_info, config, sess_co
     training = cmd_args.test_model_chkpt is None
     model_summary_dir = os.path.join(summary_dir, model_name) if training else None
     with tf_v1.Session(config=sess_config) as sess:
-        buffer = get_buffer_from_variant(config)
+        # buffer = get_buffer_from_variant(config)
         policy = get_policy_from_variant(env, config)
-        algo = get_algorithm_from_variant(sess, env, policy, buffer, model_summary_dir, training, *goal_info, config)
-        sess.run(tf_v1.global_variables_initializer())
+        algo = get_algorithm_from_variant(sess, env, policy, model_summary_dir, training, *goal_info, config)
         if training:
             print("\n# Training: {}".format(model_name))
             if training:
@@ -45,7 +44,6 @@ def run(env, seed, model_i, *, summary_dir, cmd_args, goal_info, config, sess_co
         algo.run(total_epochs=cmd_args.epochs)                     # Run the algorithm for given epochs
         if training:                                               # Save trained model as checkpoint
             algo.save_model(os.path.join(model_summary_dir, "model.chkpt"))
-    buffer.clear()
     tf_v1.reset_default_graph()
     # TODO: Which informations to log?
     # Log parameters and achieved goals information
@@ -69,6 +67,6 @@ if __name__ == "__main__":
     goal_info = get_goal_info(df, env_name=cmd_args.env_name)
     del df
     # Run model
-    for model_i, seed in enumerate(random_seed_gen(cmd_args.seed_num), start=1):
+    for model_i, seed in enumerate(random_seed_gen(cmd_args.num_exec), start=1):
         run(seed=seed, model_i=model_i, cmd_args=cmd_args, sess_config=TF_CONFIG, env=env,
             summary_dir=summary_dir, goal_info=goal_info, config=config_dict)
