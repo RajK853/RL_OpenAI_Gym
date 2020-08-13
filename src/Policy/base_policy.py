@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow.compat.v1 as tf_v1
 from gym.spaces import Discrete
 
@@ -25,11 +26,6 @@ class BasePolicy:
         assert self._loss is not None, "Loss function not initialized!"
         return self._loss
 
-    def reshape_state(self, states):
-        if states.shape == self.observation_space.shape:
-            states = states.reshape(1, *self.observation_space.shape)
-        return states
-
     @property
     def action_shape(self):
         return self.action_space.shape
@@ -38,9 +34,21 @@ class BasePolicy:
     def obs_shape(self):
         return self.observation_space.shape
 
+    @staticmethod
+    def process_action(actions):
+        actions = np.squeeze(actions)
+        if not isinstance(actions, np.ndarray):
+            return actions.item()
+        return actions
+
+    def reshape_state(self, states):
+        states = states.reshape(-1, *self.observation_space.shape)
+        return states
+
     def action(self, sess, states, **kwargs):
         states = self.reshape_state(states)
         actions = self._action(sess, states, **kwargs)
+        actions = self.process_action(actions)
         return actions
 
     def _action(self, sess, states, **kwargs):
@@ -49,10 +57,10 @@ class BasePolicy:
     def update(self, sess, states, actions, **kwargs):
         return 0.0
 
-    def hook_before_action(self, **kwargs):
+    def hook_before_epoch(self, **kwargs):
         pass
 
-    def hook_after_action(self, **kwargs):
+    def hook_after_epoch(self, **kwargs):
         pass
 
     def init_summaries(self, tag="", force=False):
