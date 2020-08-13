@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
-from numpy.random import uniform as np_uniform
 
 from .base_policy import BasePolicy
 from src.Layer import NeuralNetwork
@@ -8,11 +7,10 @@ from src.Layer import NeuralNetwork
 
 class ContinuousPolicy(BasePolicy):
 
-    def __init__(self, *, layer_units, lr=1e-3, sigma=0.1, **kwargs):
+    def __init__(self, *, layer_units, lr=1e-3, **kwargs):
         self.scope = self.__class__.__name__
         super(ContinuousPolicy, self).__init__(env=kwargs.pop("env"))
         self.lr = lr
-        self.sigma = sigma
         self.layer_units = layer_units
         self.network_kwargs = kwargs
         self.network = self.build_network(self.scope)
@@ -39,7 +37,6 @@ class ContinuousPolicy(BasePolicy):
         if network is None:
             network = self.network
         actions = sess.run(self.network.output, feed_dict={network.inputs_ph: states})
-        actions += self.sigma*np_uniform(-1, 1, size=actions.shape)
         return actions
 
     def update(self, sess, feed_dict=None, **kwargs):
