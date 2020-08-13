@@ -7,10 +7,10 @@ from src.progressbar import ProgressBar
 from src.utils import get_space_size, dict2str
 
 
-class RLAlgorithm:
+class BaseAlgorithm:
     VALID_POLICIES = {}
 
-    def __init__(self, *, sess, env, policy, replay_buffer, batch_size, render, summary_dir=None, training=True,
+    def __init__(self, *, sess, env, policy, batch_size, render, summary_dir=None, training=True,
                  goal_trials, goal_reward):
         self.env = env
         self.policy = policy
@@ -21,7 +21,6 @@ class RLAlgorithm:
         self.sess = sess
         self.render = render
         self.batch_size = batch_size
-        self.replay_buffer = replay_buffer
         # Setup summaries
         self.tag = f"{self.env.spec.id}"
         self.summary_dir = summary_dir
@@ -45,7 +44,6 @@ class RLAlgorithm:
         self.epoch_length = 0
         self.epoch_reward = 0
         self.transition = None
-        self.process_action = None
         self.summary_init_objects = (self.policy, )
         self.scalar_summaries = ("epoch_reward", "epoch_length")
         self.histogram_summaries = ()
@@ -58,8 +56,11 @@ class RLAlgorithm:
             f"{algo_type} only supports '{self.VALID_POLICIES}' and not {policy_type}!"
 
     def init_summaries(self):
+        summaries = []
         for obj in self.summary_init_objects:
             obj.init_summaries(tag=self.tag)
+            summaries.append(obj.scope)
+        print(f"\n# Initialized summaries from: {summaries}")
 
     @property
     def obs_shape(self):
@@ -75,18 +76,22 @@ class RLAlgorithm:
             self._saver = tf_v1.train.Saver(max_to_keep=10)
         return self._saver
 
-    def action(self, sess, states, **kwargs):
-        return self.policy.action(sess, states, **kwargs)
+    def action(self, states, **kwargs):
+        action = self.policy.action(self.sess, states, **kwargs)
+        return action
 
-    def step(self, state):
-        self.hook_before_step()
-        raw_action = self.action(self.sess, state, training=self.training)
-        action = self.process_action(raw_action)
+    def _step(self, state):
+        action = self.action(state)
+        # print(action)
         next_state, reward, done, info = self.env.step(action)
         self.transition = (state, action, reward, next_state, int(done))
         self.epoch_reward += reward
-        self.hook_after_step()
         return next_state, done
+
+    def step(self, state):
+        self.hook_before_step()
+        self._step(state)
+        self.hook_after_step()
 
     def _run_once(self):
         """
@@ -104,7 +109,8 @@ class RLAlgorithm:
         done = 0
         state = self.env.reset()
         while not done:
-            state, done = self.step(state)
+            self.step(state)
+            *_, state, done = self.transition
             if self.render:
                 self.env.render()
         self.hook_at_epoch_end()
@@ -115,7 +121,6 @@ class RLAlgorithm:
         args:
             total_epochs (int) : Total number of epochs
         """
-
         self.hook_before_train(epochs=total_epochs)
         mode_string = f"  {'Training' if self.training else 'Testing'} agent:"
         progressbar = ProgressBar(total_iter=total_epochs, display_text=mode_string)
@@ -154,26 +159,6 @@ class RLAlgorithm:
         """
         self.saver.restore(self.sess, chkpt_dir)
 
-    @staticmethod
-    def log(logger, model_name, parameter_dict, goal_summary):
-        """
-        Logs parameters and goal summary
-        args:
-            logger (logging.Logger) : Logger object
-            model_name (str) : Name of model
-            parameter_dict (dict) : Dictionary with parameters to log
-            goal_summary (tuple) : Tuple with goal summary
-        """
-        parameter_str = dict2str(parameter_dict)
-        logger.debug(f"{model_name} - {parameter_str}")
-        num_goals, first_goal, max_goal = goal_summary
-        first_goal_epoch, first_goal_reward = first_goal
-        max_goal_epoch, max_goal_reward = max_goal
-        logger.info(f"  Goals achieved: {num_goals:<20}")
-        if num_goals:
-            logger.info(f"  First goal achieved: {first_goal_reward:.3f} mean reward at {first_goal_epoch} epoch.")
-        logger.info(f"  Max goal achieved: {max_goal_reward:.3f} mean reward at {max_goal_epoch} epoch.\n")
-
     def write_summary(self, name, **kwargs):
         summary = tf_v1.Summary(value=[tf_v1.Summary.Value(tag=name, **kwargs)])
         self.summary_writer.add_summary(summary, self.epoch)
@@ -207,14 +192,10 @@ class RLAlgorithm:
                     self.summary_writer.add_summary(summary, self.epoch)
 
     def hook_before_train(self, **kwargs):
+        self.init_summaries()
         assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
         print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
-        sample_action = self.env.action_space.sample()
-        if isinstance(sample_action, np.ndarray):
-            self.process_action = lambda a: np.array([np.squeeze(a)]) if len(sample_action) == 1 else np.squeeze(a)
-        else:
-            self.process_action = lambda a: np.squeeze(a).item()
-        self.init_summaries()
+        self.sess.run(tf_v1.global_variables_initializer())
 
     def hook_before_epoch(self, **kwargs):
         self.epoch_reward = 0.0
