@@ -14,23 +14,41 @@ class ReplayBuffer:
             size (int) : Maximum size of replay buffer
         """
         self._maxsize = size
-        self._storage = deque(maxlen=size)
+        self._pointer = 0
+        self._size = 0
+        self._buffer = None
 
     def __len__(self):
-        return len(self._storage)
+        return self._size
+
+    def _init_buffer(self, sample):
+        buffer = []
+        for obj in sample:
+            shape = (self._maxsize, )
+            if isinstance(obj, np.ndarray):
+                shape += obj.shape
+                kind = obj.dtype
+            else:
+                kind = type(obj)
+            buffer.append(np.zeros(shape, dtype=kind))
+        self._buffer = buffer
+        self._size = 0
+        self._pointer = 0
 
     def add(self, transition):
         """
         Add transition data to the replay buffer
-        args:
-            state : Current state
-            action : Action taken
-            reward (float) : Received reward
-            next_state : Next state
-            done (bool) : Episode done
         """
-        assert len(transition) == 5, "Invalid data received by the replay buffer; {}".format(transition)
-        self._storage.append(transition)
+        if self._buffer is None:
+            self._init_buffer(transition)
+        i = self._pointer
+        for obj, buffer in zip(transition, self._buffer):
+            buffer[i] = obj
+        self._pointer = (self._pointer + 1) % self._maxsize
+        self._size = min(self._size + 1, self._maxsize)
+
+    def _encode_samples(self, idxes):
+        return tuple(buffer[idxes] for buffer in self._buffer)
 
     def _encode_sample(self, idxes):
         """
@@ -42,11 +60,11 @@ class ReplayBuffer:
         """
         states, actions, rewards, next_states, dones = [], [], [], [], []
         for i in idxes:
-            obs_t, action, reward, obs_tp1, done = self._storage[i]
-            states.append(np.array(obs_t, copy=False))
-            actions.append(np.array(action, copy=False))
+            obs_t, action, reward, obs_tp1, done = self._buffer[i]
+            states.append(obs_t)
+            actions.append(action)
             rewards.append(reward)
-            next_states.append(np.array(obs_tp1, copy=False))
+            next_states.append(obs_tp1)
             dones.append(done)
         return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(dones)
 
@@ -58,15 +76,14 @@ class ReplayBuffer:
         returns:
             tuple of 5 lists : Sampled batch of transitions 
         """
-        batch_size = min(len(self), batch_size)
         idxes = np.random.randint(0, len(self), size=batch_size)
-        return self._encode_sample(idxes)
+        return self._encode_samples(idxes)
 
     def clear(self):
         """
         Clear the contents of replay buffer
         """
-        self._storage.clear()
+        self._buffer.clear()
 
 
 class PrioritizedReplayBuffer(ReplayBuffer):
@@ -74,8 +91,8 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         super().__init__(size)
         self._priorities = deque(maxlen=size)
 
-    def add(self, state, action, reward, obs_t1, done, **kwargs):
-        super().add(state, action, reward, obs_t1, done)
+    def add(self, transition):
+        super().add(transition)
         self._priorities.append(max(self._priorities, default=1))
 
     def sample(self, batch_size, priority_scale=1.0):
@@ -83,7 +100,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         batch_probs = self.get_probabilities(priority_scale)
         batch_indices = np.random.choice(range(len(self)), size=batch_size, p=batch_probs)
         batch_importance = self.get_importance(batch_probs[batch_indices])
-        batch = np.array(self._storage)[batch_indices].T
+        batch = np.array(self._buffer)[batch_indices].T
         return batch, batch_importance, batch_indices
 
     def get_probabilities(self, priority_scale):
