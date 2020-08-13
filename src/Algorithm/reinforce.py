@@ -1,9 +1,9 @@
 import numpy as np
-from .rl_algorithm import RLAlgorithm
+from . import OnPolicyAlgorithm
 from src.utils import standardize_array
 
 
-class Reinforce(RLAlgorithm):
+class Reinforce(OnPolicyAlgorithm):
     VALID_POLICIES = {"DiscretePolicy", "GaussianPolicy"}
 
     def __init__(self, *, gamma=0.99, num_train=1, **kwargs):
@@ -12,16 +12,8 @@ class Reinforce(RLAlgorithm):
         self.trajectory = {}
         self.num_train = num_train
         self.mean_policy_loss = 0.0
+        self.field_names = ("state", "action", "reward")
         self.scalar_summaries += ("mean_policy_loss", )
-
-    def add_transition(self, **kwargs):
-        for key, value in kwargs.items():
-            if key not in self.trajectory.keys():
-                self.trajectory[key] = []
-            self.trajectory[key].append(value)
-
-    def sample_trajectory(self):
-        return {key: np.array(value) for key, value in self.trajectory.items()}
 
     def compute_discounted_return(self, rewards):
         discounted_return = np.zeros(self.epoch_length, np.float32)
@@ -32,17 +24,21 @@ class Reinforce(RLAlgorithm):
         return discounted_return
 
     def train(self):
-        trajectory = self.sample_trajectory()
-        discounted_return = self.compute_discounted_return(trajectory["reward"])
+        states, actions, rewards = self.sample_trajectory()
+        discounted_return = self.compute_discounted_return(rewards)
         discounted_return = standardize_array(discounted_return)
-        args = (self.sess, trajectory["state"], trajectory["action"])
+        args = (self.sess, states, actions)
         self.mean_policy_loss = np.mean([self.policy.update(*args, targets=discounted_return)
                                          for _ in range(self.num_train)])
+
+    def hook_before_train(self, **kwargs):
+        self.policy.init_default_loss()
+        super().hook_before_train(**kwargs)
 
     def hook_after_step(self, **kwargs):
         super().hook_after_step(**kwargs)
         if self.training:
-            state, action, reward, next_state, done = self.transition
+            state, action, reward, *_ = self.transition
             self.add_transition(state=state, action=action, reward=reward)
 
     def hook_after_epoch(self, **kwargs):
