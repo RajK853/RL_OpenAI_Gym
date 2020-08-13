@@ -1,12 +1,12 @@
 import numpy as np
 from src.Layer import QNetwork
-from .rl_algorithm import RLAlgorithm
+from . import OffPolicyAlgorithm
 
 
-class DQN(RLAlgorithm):
+class DQN(OffPolicyAlgorithm):
     VALID_POLICIES = ["GreedyEpsilonPolicy"]
 
-    def __init__(self, *, gamma, lr, layer_units=None, **kwargs):
+    def __init__(self, *, gamma=0.9, lr=0.99, layer_units=None, **kwargs):
         super(DQN, self).__init__(**kwargs)
         self.gamma = gamma
         self.lr = lr
@@ -21,25 +21,25 @@ class DQN(RLAlgorithm):
     def eps(self):
         return self.policy.eps
 
-    def action(self, sess, states, **kwargs):
-        return self.policy.action(sess, states, estimator=self.q_net, **kwargs)
+    def action(self, states, **kwargs):
+        return super().action(states, estimator=self.q_net, **kwargs)
 
-    def train(self, sess):
+    def train(self):
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
         # Predict Q-values for next states
-        current_qs = self.target_q.predict(sess, states)
-        next_qs = self.target_q.predict(sess, next_states)
+        current_qs = self.target_q.predict(self.sess, states)
+        next_qs = self.target_q.predict(self.sess, next_states)
         q_targets = current_qs
         q_targets[np.arange(len(actions)), actions] = self.lr*(rewards + self.gamma*(1 - dones)*np.amax(next_qs, axis=-1))
-        self.mean_estimator_loss = self.q_net.update(sess, states, q_targets)
-
-    def hook_after_epoch(self, **kwargs):
-        super().hook_after_epoch(**kwargs)
-        if self.training:
-            self.policy.hook_after_action(epoch=self.epoch, **kwargs)
-            self.add_summaries()
+        self.mean_estimator_loss = self.q_net.update(self.sess, states, q_targets)
 
     def hook_after_step(self, **kwargs):
         if self.training:
             self.replay_buffer.add(self.transition)
-            self.train(self.sess)
+            self.train()
+
+    def hook_after_epoch(self, **kwargs):
+        super().hook_after_epoch(**kwargs)
+        if self.training:
+            self.policy.hook_after_epoch(epoch=self.epoch, **kwargs)
+            self.add_summaries()
