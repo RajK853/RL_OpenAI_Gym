@@ -1,17 +1,15 @@
 import numpy as np
-from time import perf_counter
+import os.path as os_path
 import tensorflow.compat.v1 as tf_v1
-from collections import deque
 
 from src.progressbar import ProgressBar
-from src.utils import get_space_size, dict2str
+from src.utils import get_space_size, json_dump
 
 
 class BaseAlgorithm:
     VALID_POLICIES = {}
 
-    def __init__(self, *, sess, env, policy, batch_size, render, summary_dir=None, training=True,
-                 goal_trials, goal_reward):
+    def __init__(self, *, sess, env, policy, batch_size, render, goal_trials, goal_reward, load_model=None, summary_dir=None, training=True):
         self.env = env
         self.policy = policy
         self.action_space = env.action_space
@@ -21,6 +19,7 @@ class BaseAlgorithm:
         self.sess = sess
         self.render = render
         self.batch_size = batch_size
+        self.load_model = load_model
         # Setup summaries
         self.tag = f"{self.env.spec.id}"
         self.summary_dir = summary_dir
@@ -55,12 +54,19 @@ class BaseAlgorithm:
         assert len(self.VALID_POLICIES) == 0 or policy_type in self.VALID_POLICIES, \
             f"{algo_type} only supports '{self.VALID_POLICIES}' and not {policy_type}!"
 
+    @staticmethod
+    def get_summaries(obj):
+        return obj.scalar_summaries + obj.histogram_summaries
+
     def init_summaries(self):
-        summaries = []
+        summaries = {"algo": self.get_summaries(self)}
         for obj in self.summary_init_objects:
             obj.init_summaries(tag=self.tag)
-            summaries.append(obj.scope)
-        print(f"\n# Initialized summaries from: {summaries}")
+            summaries[obj.scope] = self.get_summaries(obj)
+        # summaries = dict2str(summaries)
+        print("\n# Initialized summaries:")
+        for key, value in summaries.items():
+            print(f"  {key}: {value}")
 
     @property
     def obs_shape(self):
@@ -80,18 +86,19 @@ class BaseAlgorithm:
         action = self.policy.action(self.sess, states, **kwargs)
         return action
 
-    def _step(self, state):
-        action = self.action(state)
+    def _step(self, env, state):
+        action = self.action(state)[0]
         # print(action)
-        next_state, reward, done, info = self.env.step(action)
+        next_state, reward, done, info = env.step(action)
         self.transition = (state, action, reward, next_state, int(done))
         self.epoch_reward += reward
         return next_state, done
 
     def step(self, state):
         self.hook_before_step()
-        self._step(state)
+        next_state, done = self._step(self.env, state)
         self.hook_after_step()
+        return next_state, done
 
     def _run_once(self):
         """
@@ -109,8 +116,7 @@ class BaseAlgorithm:
         done = 0
         state = self.env.reset()
         while not done:
-            self.step(state)
-            *_, state, done = self.transition
+            state, done = self.step(state)
             if self.render:
                 self.env.render()
         self.hook_at_epoch_end()
@@ -122,25 +128,12 @@ class BaseAlgorithm:
             total_epochs (int) : Total number of epochs
         """
         self.hook_before_train(epochs=total_epochs)
-        mode_string = f"  {'Training' if self.training else 'Testing'} agent:"
-        progressbar = ProgressBar(total_iter=total_epochs, display_text=mode_string)
-        timing_queue = deque(maxlen=50)
-        start_time = perf_counter()
+        progressbar = ProgressBar(total_epochs, title=f"# {'Training' if self.training else 'Testing'} agent:", info_text="Epoch: ({epoch}/%s)"%(total_epochs))
+        print()
         for self.epoch in range(1, total_epochs + 1):
-            t0 = perf_counter()
             self._run_once()
             self.hook_after_epoch()
-            t1 = perf_counter()
-            dt = t1-t0
-            timing_queue.append(dt)
-            mean_time_per_epoch = np.mean(timing_queue)
-            time_left_sec = (total_epochs - self.epoch)*mean_time_per_epoch
-            time_left_minute = time_left_sec/60
-            elapsed_time_sec = t1-start_time
-            elapsed_time_minute = elapsed_time_sec/60
-            time_info_text = f"[Mean time per epoch: {mean_time_per_epoch:3.2f} seconds, " \
-                             f"Elapsed time: {elapsed_time_minute:3.2f} minutes, ETA: {time_left_minute:3.2f} minutes]"
-            progressbar.step(add_text=time_info_text)
+            progressbar.step(epoch=self.epoch)
         self.hook_after_train()
 
     def save_model(self, chkpt_dir):
@@ -150,6 +143,7 @@ class BaseAlgorithm:
             chkpt_dir (str) : Destination directory to store variables (as checkpoint)
         """
         self.saver.save(self.sess, chkpt_dir)
+        print(f"# Saved model weights to '{chkpt_dir}'")
 
     def restore_model(self, chkpt_dir):
         """
@@ -158,12 +152,13 @@ class BaseAlgorithm:
             chkpt_dir (str) : Source directory to restore variables (as checkpoint)
         """
         self.saver.restore(self.sess, chkpt_dir)
+        print(f"# Restored model weights from '{chkpt_dir}'")
 
-    def write_summary(self, name, **kwargs):
+    def write_summary(self, name, step, **kwargs):
         summary = tf_v1.Summary(value=[tf_v1.Summary.Value(tag=name, **kwargs)])
-        self.summary_writer.add_summary(summary, self.epoch)
+        self.summary_writer.add_summary(summary, step)
 
-    def add_summaries(self):
+    def add_summaries(self, step):
         def get_histogram(values):
             counts, bin_edges = np.histogram(values)
             # Fill fields of histogram proto
@@ -181,21 +176,26 @@ class BaseAlgorithm:
         if self.summary_writer is not None:
             for summary_attr in self.scalar_summaries:
                 attr = getattr(self, summary_attr)
-                self.write_summary(f"{self.tag}/{summary_attr}", simple_value=attr)
+                self.write_summary(f"{self.tag}/{summary_attr}", step=step, simple_value=attr)
             for summary_attr in self.histogram_summaries:
                 attr = np.array(getattr(self, summary_attr))
                 histogram = get_histogram(attr)
-                self.write_summary(f"{self.tag}/{summary_attr}", histo=histogram)
+                self.write_summary(f"{self.tag}/{summary_attr}", step=step, histo=histogram)
             for obj in self.summary_init_objects:
                 summary = getattr(obj, "summary")
                 if summary:
-                    self.summary_writer.add_summary(summary, self.epoch)
+                    self.summary_writer.add_summary(summary, step)
 
     def hook_before_train(self, **kwargs):
-        self.init_summaries()
-        assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
-        print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
-        self.sess.run(tf_v1.global_variables_initializer())
+        if self.training:
+            self.init_summaries()
+            assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
+            print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
+            self.sess.run(tf_v1.global_variables_initializer())
+        else:
+            assert self.load_model is not None, "No model given to test!"
+        if self.load_model is not None:
+            self.restore_model(os_path.join(self.load_model, "model.chkpt"))          # Restore model variables
 
     def hook_before_epoch(self, **kwargs):
         self.epoch_reward = 0.0
@@ -222,10 +222,17 @@ class BaseAlgorithm:
                 self.max_mean_reward = (self.epoch, self.mean_reward)
 
     def hook_after_train(self, **kwargs):
-        print(f"\n# Goal Summary")
-        print(f"  Number of achieved goals: {self.goals_achieved}")
-        if self.goals_achieved:
-            print(f"  First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]:.3f}")
-        trials = self.goal_trials
-        epoch, reward = self.max_mean_reward
-        print(f"  Best mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.3f}")
+        if self.training:
+            print(f"\n# Goal Summary")
+            print(f"  Number of achieved goals: {self.goals_achieved}")
+            if self.goals_achieved:
+                print(f"  First goal achieved at epoch {self.first_goal[0]} with reward {self.first_goal[1]:.3f}")
+            trials = self.goal_trials
+            epoch, reward = self.max_mean_reward
+            print(f"  Best mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.3f}")
+            json_file = os_path.join(self.summary_dir, "goal_info.json")
+            dump_dict = {"num_goals_achieved": self.goals_achieved,
+                         "first_goal": dict(zip(("epoch", "reward"), self.first_goal)),
+                         "max_mean_reward": dict(zip(("epoch", "reward"), self.max_mean_reward))}
+            json_dump(dump_dict, file_name=json_file, indent=4)
+            print(f"\n# Goal info saved at '{json_file}'")
