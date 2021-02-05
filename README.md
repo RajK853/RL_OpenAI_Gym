@@ -23,10 +23,4 @@ conda activate open_ai_gym
 ```
 
 ## Usage:
-Read the documentation provided in [here](run/README.md) for training and testing procedures.  
-
-## TODO:
-- ~~Complete code for Gaussian policy for continuous action space.~~
-- Add support for different replay buffers; PER, HER, etc.
-- Add support for different algorithms; ~~SARSA~~, ~~DDPG~~, SAC, etc.
-- Include preprocessors for neural networks. For instance a CNN network to process state images.
+Read the documentation provided in [here](run/README.md) for training and testing procedures.

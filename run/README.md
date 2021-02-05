@@ -16,7 +16,11 @@ In the above command:
 ***
 ## Testing  the agent
 - Open command terminal in the root directory.
-- Along with the code to train the agent, provide directory with model checkpoint to `--test_mode_chkpt` argument.
+- Enter the following command:
+```shell
+python -m run --env_name "CartPole-v0" --epochs 10 --render True --record_interval 1 --algorithm "ddqn" --policy "greedy_epsilon" --load_model "summary/../Model 1"
+```
+> The `--load_model` argument takes the directory path of a trained model checkpoint.
 
 ***
 ## Summary information
