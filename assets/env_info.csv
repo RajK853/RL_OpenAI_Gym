@@ -8,8 +8,8 @@ Acrobot-v1,"Box(6,)",Discrete(3),"(-inf, inf)",500,100,-100.0
 LunarLander-v2,"Box(8,)",Discrete(4),"(-inf, inf)",1000,100,200
 LunarLanderContinuous-v2,"Box(8,)","Box(2,)","(-inf, inf)",1000,100,200
 MemorizeDigits-v0,"Box(24, 32, 3)",Discrete(10),"(-inf, inf)",None,100,20
-BipedalWalker-v2,"Box(24,)","Box(4,)","(-inf, inf)",1600,100,300
-BipedalWalkerHardcore-v2,"Box(24,)","Box(4,)","(-inf, inf)",2000,100,300
+BipedalWalker-v3,"Box(24,)","Box(4,)","(-inf, inf)",1600,100,300
+BipedalWalkerHardcore-v3,"Box(24,)","Box(4,)","(-inf, inf)",2000,100,300
 CubeCrash-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
 CubeCrashSparse-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
 CubeCrashScreenBecomesBlack-v0,"Box(40, 32, 3)",Discrete(3),"(-inf, inf)",None,100,0.9
