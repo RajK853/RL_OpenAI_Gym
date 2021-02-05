@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import argparse
 import numpy as np
@@ -8,7 +9,7 @@ from gym.spaces import Box, Discrete
 
 
 def polyak_average(src_value, target_value, tau=0.5):
-    return target_value + tau*(src_value - target_value)
+    return tau*src_value + (1-tau)*target_value
 
 
 def get_space_size(space):
@@ -75,6 +76,11 @@ def get_logger(log_file):
     return logger
 
 
+def json_dump(data_dict, file_name, **kwargs):
+    with open(file_name, "w") as fp:
+        json.dump(data_dict, fp=fp, **kwargs)
+
+
 def eval_dict_values(config_dict):
     """
     Evaluates the values of the dictionary
@@ -106,7 +112,8 @@ def get_goal_info(df, env_name):
     env_cond = (df.loc[:, "Environment Id"] == env_name)
     assert any(env_cond), f"{env_name} not found!"
     goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
-    return int(goal_trials), float(goal_reward)
+    goal_reward = 0.0 if goal_reward == "None" else float(goal_reward)
+    return int(goal_trials), goal_reward
 
 
 def parse_args():
@@ -117,15 +124,17 @@ def parse_args():
     """
     # TODO: 1) Update csv with best hyper-parameter values, 2) Restoring model does not require algorithm
     #  or (load env_name, algo, policy from meta data)
+    # 3) Save and load only policy
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
     arg_parser.add_argument("--num_exec", help="Number of executions", type=int, default=1)
     arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
     arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
     arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=False)
+    arg_parser.add_argument("--training", help="Training or testing mode", type=boolean_string, default=True)
     arg_parser.add_argument("--record_interval", help="Video record interval (in epoch)", type=int, default=10)
-    arg_parser.add_argument("--test_model_chkpt", help="Model checkpoint to evaluate", type=str, default=None)
-    arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="dqn")
+    arg_parser.add_argument("--load_model", help="Model checkpoint to load weights", type=str, default=None)
+    arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="ddqn")
     arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
 
     _args = arg_parser.parse_args()
