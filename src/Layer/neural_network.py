@@ -14,11 +14,11 @@ class NeuralNetwork:
         self.inputs_ph = tf_v1.placeholder(input_type, shape=(None, *input_shape), name=f"{scope}_inputs")
         self.layers = []
         if layer_kwargs is None:
-            layer_kwargs = {"activation": tf_v1.nn.relu, "kernel_regularizer": l2(1e-3)}
+            layer_kwargs = {"activation": tf_v1.nn.relu, "kernel_regularizer": l2(1e-6)}
         if output_kwargs is None:
             output_kwargs = {}
         self.init_layers(layer_units, layer_kwargs, output_kwargs)
-        self.network_output = self(self.inputs_ph)
+        self.output_tf = self(self.inputs_ph)
         self._trainable_vars = None
         # Weight update parameters
         self.weight_update_op = None
@@ -46,21 +46,20 @@ class NeuralNetwork:
 
     @property
     def output(self):
-        return self.network_output
+        return self.output_tf
 
     def init_weight_update_op(self, src_net):
-        if self.weight_update_op is None:
-            target_vars = self.trainable_vars
-            src_vars = src_net.trainable_vars
-            self.weight_update_op = tf.group([tf_v1.assign(t_var, polyak_average(src_var, t_var, tau=self.tau_ph))
-                                              for t_var, src_var in zip(target_vars, src_vars)])
+        src_vars = src_net.trainable_vars
+        target_vars = self.trainable_vars
+        self.weight_update_op = tf.group([tf_v1.assign(t_var, polyak_average(src_var, t_var, tau=self.tau_ph))
+                                          for t_var, src_var in zip(target_vars, src_vars)])
 
     def update_weights(self, sess, tau):
         sess.run(self.weight_update_op, feed_dict={self.tau_ph: tau})
 
     def predict(self, sess, inputs):
         if inputs.shape == self.input_shape:
-            inputs = inputs.reshape(1, *self.input_shape)
+            inputs = inputs.reshape(1, -1)
         outputs = sess.run(self.output, feed_dict={self.inputs_ph: inputs})
         return outputs
 

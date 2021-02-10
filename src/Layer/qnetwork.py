@@ -9,7 +9,7 @@ class QNetwork(NeuralNetwork):
     """
     DEFAULT_KWARGS = {"layer_units": (50, 50), "activation": tf.nn.relu}
 
-    def __init__(self, input_shape, output_size, scope="local_network", lr=0.001, **kwargs):
+    def __init__(self, input_shape, output_size, scope="local_network", lr=0.001, weights=1.0, **kwargs):
         """
         Constructor function
         args:
@@ -21,9 +21,9 @@ class QNetwork(NeuralNetwork):
         super(QNetwork, self).__init__(scope, input_shape=input_shape, output_size=output_size, **kwargs)
         # Placeholders for targets
         self.targets_ph = tf_v1.placeholder(shape=[None, output_size], dtype=tf.float32, name=f"{scope}_targets")
-        self.predictions = self.output
-        self.loss = tf_v1.losses.mean_squared_error(self.targets_ph, self.predictions)
-        self.train_op = tf_v1.train.AdamOptimizer(learning_rate=lr).minimize(self.loss, var_list=self.trainable_vars)
+        self.loss = tf_v1.losses.mean_squared_error(labels=self.targets_ph, predictions=self.output, weights=weights)
+        optimizer = tf_v1.train.AdamOptimizer(learning_rate=lr)
+        self.train_op = optimizer.minimize(self.loss, var_list=self.trainable_vars)
         # Summary parameters
         self.summary_op = None
         self.summary = None
