@@ -9,7 +9,8 @@ from src.utils import get_space_size, json_dump
 class BaseAlgorithm:
     VALID_POLICIES = {}
 
-    def __init__(self, *, sess, env, policy, batch_size, render, goal_trials, goal_reward, load_model=None, summary_dir=None, training=True):
+    def __init__(self, *, sess, env, policy, batch_size, render, goal_trials, goal_reward, load_model=None,
+                 summary_dir=None, training=True):
         self.env = env
         self.policy = policy
         self.action_space = env.action_space
@@ -21,7 +22,7 @@ class BaseAlgorithm:
         self.batch_size = batch_size
         self.load_model = load_model
         # Setup summaries
-        self.tag = f"{self.env.spec.id}"
+        self.tag = self.env.spec.id
         self.summary_dir = summary_dir
         if summary_dir is None:
             self.summary_writer = None
@@ -189,7 +190,7 @@ class BaseAlgorithm:
     def hook_before_train(self, **kwargs):
         if self.training:
             self.init_summaries()
-            assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
+            # assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
             print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
             self.sess.run(tf_v1.global_variables_initializer())
         else:
@@ -230,7 +231,7 @@ class BaseAlgorithm:
             trials = self.goal_trials
             epoch, reward = self.max_mean_reward
             print(f"  Best mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.3f}")
-            json_file = os_path.join(self.summary_dir, "goal_info.json")
+            json_file = os_path.join(os_path.dirname(self.summary_dir), "goal_info.json")
             dump_dict = {"num_goals_achieved": self.goals_achieved,
                          "first_goal": dict(zip(("epoch", "reward"), self.first_goal)),
                          "max_mean_reward": dict(zip(("epoch", "reward"), self.max_mean_reward))}
