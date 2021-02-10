@@ -1,5 +1,6 @@
 import os
 import json
+import yaml
 import logging
 import argparse
 import numpy as np
@@ -114,6 +115,42 @@ def get_goal_info(df, env_name):
     goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
     goal_reward = 0.0 if goal_reward == "None" else float(goal_reward)
     return int(goal_trials), goal_reward
+
+
+def load_yaml(file_path):
+    """
+    Loads a YAML file from the given path
+    :param file_path: (str) YAML file path
+    :returns: (dict) Loaded YAML file as a dictionary
+    """
+    with open(file_path, "r") as fp:
+        return yaml.safe_load(fp)
+
+
+def exec_from_yaml(config_path, exec_func, title="Experiment"):
+    """
+    Executes the given function by loading parameters from a YAML file with given structure:
+    - Experiment 1 Name:
+        argument_1: value_1
+        argument_2: value_2
+        ...
+    - Experiment 2 Name:
+        argument_1: value_1
+        argument_2: value_2
+        ...
+    NOTE: The argument names in the YAML file should match the argument names of the given execution function.
+    :param config_path: (str) YAML file path
+    :param exec_func: (callable) Function to execute with the loaded parameters
+    :param title: (str) Label for each experiment
+    :returns: (dict) Dictionary with results received from each experiment execution
+    """
+    result_dict = {}
+    config_dict = load_yaml(config_path)
+    for i, (exp_name, exp_kwargs) in enumerate(config_dict.items(), start=1):
+        print(f"\n{i}. {title}: {exp_name}")
+        result = exec_func(**exp_kwargs)        # Execute the exec_func function by unpacking the experiment keyworded-arguments
+        result_dict[exp_name] = result
+    return result_dict
 
 
 def parse_args():
