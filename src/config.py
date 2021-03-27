@@ -1,7 +1,4 @@
 import copy
-import tensorflow.compat.v1 as tf_v1
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.constraints import max_norm
 
 from src.Policy import GreedyEpsilonPolicy, GaussianPolicy, DiscretePolicy, ContinuousPolicy
 from src.Algorithm import DQN, DDQN, Reinforce, ActorCritic, Sarsa, DDPG, SAC
@@ -33,8 +30,10 @@ REPLAY_BUFFERS = {
 GreedyEpsilon = {
     "function": GreedyEpsilonPolicy,
     "kwargs": {
-        "eps_range": (0.9, 0.001),
-        "eps_decay": 0.01,
+        "eps_kwargs": {
+            "decay": 0.001,
+            "clip_range": (0.001, 0.7),
+        },
         "explore_ratio": 0.60,
         "explore_exploit_interval": 20,
     }
@@ -44,43 +43,36 @@ Gaussian = {
     "function": GaussianPolicy,
     "kwargs": {
         "alpha": 2e-4,
-        "lr": 0.1*POLICY_LEARNING_RATE,
-        "shift_scale": 1.5,
-        "min_log_scale": -10,
-        "max_log_scale": 0.69,          # auto = size of action space
-        "layer_units": (256, 256),
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": None, # l2(1e-6),
-            "kernel_constraint": max_norm(2.0),
-        }
+        "lr_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 0.0003,
+        },
+        "mu_range": (-2.0, 2.0),
+        "log_std_range": (-20.0, -0.3),
     }
 }
 
 Discrete = {
     "function": DiscretePolicy,
     "kwargs": {
-        "lr": POLICY_LEARNING_RATE,
-        "layer_units": (50, 50, 50),
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": l2(1e-6),
-        }
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
+        },
     }
 }
 
 Continuous = {
     "function": ContinuousPolicy,
     "kwargs": {
-        "lr": POLICY_LEARNING_RATE,
-        "layer_units": (50, 100, 50),
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": l2(1e-6),
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
         },
-        "output_kwargs": {
-            "activation": tf_v1.nn.tanh,
-        }
     }
 }
 
@@ -92,68 +84,110 @@ POLICIES = {
 }
 
 # Algorithms
-_DQN = {
-    "function": DQN,
-    "kwargs": {
-        "lr": 0.989,
-        "gamma": 0.996,
-        "batch_size": 100,
-        "layer_units": (50, 50, 50),
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": l2(1e-6),
-        }
-    }
-}
-
 _Sarsa = {
     "function": Sarsa,
     "kwargs": {
-        "lr": 0.99,
-        "gamma": 0.996,
-        "layer_units": (50, 50, 25),
+        "gamma_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "e_offset": 1.0,
+            "e_scale": -1.0,
+            "update_step": 50,
+            "clip_range": (0.99, 0.997),
+        },
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
+        },
+    }
+}
+
+_DQN = {
+    "function": DQN,
+    "kwargs": {
+        "gamma_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "e_offset": 1.0,
+            "e_scale": -1.0,
+            "update_step": 50,
+            "clip_range": (0.99, 0.997),
+        },
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
+        },
+        "batch_size": 100,
+        "num_init_exp_samples": 10000,
     }
 }
 
 _DDQN = {
     "function": DDQN,
     "kwargs": {
-        "lr": 0.99,
-        "gamma": 0.996,
-        "layer_units": (50, 50, 25),
-        "tau": 0.01,
+        "tau": 0.003,
         "update_interval": 1,
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": l2(1e-6),
-        }
+        "batch_size": 100,
+        "num_init_exp_samples": 10000,
+        "gamma_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "e_offset": 1.0,
+            "e_scale": -1.0,
+            "update_step": 50,
+            "clip_range": (0.99, 0.997),
+        },
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
+        },
     }
 }
 
 _DDPG = {
     "function": DDPG,
     "kwargs": {
+        "num_init_exp_samples": 10000,
         "buffer_size": 500_000,
         "reward_scale": 1.0,
-        "gamma": 0.99,
         "batch_size": 100,
-        "layer_units": (100, 100, 50),
-        "q_lr": POLICY_LEARNING_RATE,
-        "tau": 0.008,
+        "tau": 0.003,
         "update_interval": 1,
-        "random_type": "normal",
-        "sigma": 0.3,           # Noise value = sigma * random.uniform(-1, 1) or random.normal(loc=0.0, scale=sigma)
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": l2(1e-6),
-        }
+        "random_type": "uniform",
+        "sigma_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 1.0,
+        },
+        "gamma_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 0.99,
+        },
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "update_step": 20,
+            "clip_range": (0.0001, 0.001),
+        },
     }
 }
 
 _Reinforce = {
     "function": Reinforce,
     "kwargs": {
-        "gamma": 0.9,
+        "gamma_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "e_offset": 1.0,
+            "e_scale": -1.0,
+            "update_step": 50,
+            "clip_range": (0.99, 0.997),
+        },
         "num_train": 2,
     }
 }
@@ -161,35 +195,52 @@ _Reinforce = {
 _ActorCritic = {
     "function": ActorCritic,
     "kwargs": {
-        "gamma": 0.9,
+        "lr_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.0025,
+            "update_step": 100,
+            "clip_range": (0.0008, 0.002),
+        },
+        "gamma_kwargs": {
+            "type": "ExpScheduler",
+            "decay_rate": 0.005,
+            "e_offset": 1.0,
+            "e_scale": -1.0,
+            "update_step": 50,
+            "clip_range": (0.99, 0.997),
+        },
         "num_train": 2,
     }
 }
-
 _SAC = {
     "function": SAC,
     "kwargs": {
         "buffer_size": 500_000,
         "reward_scale": 1.0,
-        "gamma": 0.99,
         "batch_size": 256,
+        "clip_norm": 5.0,
         "num_init_exp_samples": 10000,
-        "layer_units": (100, 100),
-        "tau": 5e-3,            # param(targets) = tau*param(source) + (1-tau)*param(targets) 
+        "tau": 5e-3,            # param(targets) = tau*param(source) + (1-tau)*param(targets)
         "update_interval": 1,   # Time steps
         "num_q_nets": 2,
-        "q_lr": POLICY_LEARNING_RATE,
-        "alpha_lr": POLICY_LEARNING_RATE,
         "auto_ent": True,
-        "target_entropy": -2,    # auto = -0.5 * Action space size
+        "target_entropy": "auto",    # auto = -0.5 * Action space size
         "init_log_alpha": 0.0,   # auto = 2 * Target entropy
-        "layer_kwargs": {
-            "activation": tf_v1.nn.relu,
-            "kernel_regularizer": None # l2(1e-6),
-            # "kernel_constraint": max_norm(2.0),
-        }
+        "gamma_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 0.99,
+        },
+        "q_lr_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 0.0003,
+        },
+        "alpha_lr_kwargs": {
+            "type": "ConstantScheduler",
+            "value": 0.0003,
+        },
     }
 }
+
 
 ALGORITHMS = {
     "dqn": _DQN,
@@ -213,24 +264,25 @@ def get_configuration(args):
     return config_dict
 
 
-def get_func_and_kwargs_from_param(param):
-    return param["function"], param["kwargs"]
+def _get_config(src_dict, key, deep=True):
+    dict_value = src_dict.get(key, None)
+    assert dict_value is not None, f"Invalid key '{key}' received!; Valid keys: {','.join(src_dict.keys())}"
+    if deep:
+        dict_value = copy.deepcopy(dict_value)
+    return dict_value
 
 
-def get_buffer_from_variant(variant):
-    param = variant["buffer_param"]
-    func, kwargs = get_func_and_kwargs_from_param(param)
-    return func(**kwargs)
+def load_variant(src_dict, variant):
+    config_dict = _get_config(src_dict, variant["name"], deep=True)
+    config_dict["kwargs"].update(variant.get("kwargs", {}))
+    return config_dict
 
 
-def get_policy_from_variant(env, variant):
-    param = variant["policy_param"]
-    func, kwargs = get_func_and_kwargs_from_param(param)
-    return func(env=env, **kwargs)
+def get_algo(variant):
+    algo_config = load_variant(ALGORITHMS, variant)
+    return algo_config["function"], copy.deepcopy(algo_config["kwargs"])
 
 
-def get_algorithm_from_variant(sess, env, policy, summary_dir, training, load_model, goal_trials, goal_reward, variant):
-    param = variant["algorithm_param"]
-    func, kwargs = get_func_and_kwargs_from_param(param)
-    return func(sess=sess, env=env, policy=policy, summary_dir=summary_dir,
-                training=training, goal_trials=goal_trials, goal_reward=goal_reward, load_model=load_model, **kwargs)
+def get_policy(variant):
+    policy_config = load_variant(POLICIES, variant)
+    return policy_config["function"], copy.deepcopy(policy_config["kwargs"])
