@@ -1,0 +1,32 @@
+Exp1: &base_config
+  env_name: CartPole-v1
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  load_model: null
+  summary_dir: summaries1
+  algo:
+    name: sarsa
+    kwargs: &algo_configs
+      num_trains: 10
+      clip_norm: null
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.9
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+        # decay_rate: 0.001
+        # update_step: 100
+        # clip_range: [0.0005, 0.001]
+  policy:
+    name: greedy_epsilon
+    kwargs: &policy_configs
+      explore_ratio: 0.6
+      explore_exploit_interval: 20
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        update_step: 20
+        clip_range: [0.001, 0.75]

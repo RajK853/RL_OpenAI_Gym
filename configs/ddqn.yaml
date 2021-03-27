@@ -1,0 +1,76 @@
+Exp1: &base_config
+  env_name: CartPole-v1
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  load_model: null
+  summary_dir: summaries1
+  algo:
+    name: ddqn
+    kwargs: &algo_configs
+      batch_size: 256
+      clip_norm: 2.0
+      tau: 0.01
+      update_interval: 1
+      num_init_exp_samples: 2500
+      gamma_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.005
+        update_step: 50
+        e_offset: 1.0
+        e_scale: -1.0
+        clip_range: [0.99, 0.997]
+      lr_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        update_step: 20
+        clip_range: [0.0001, 0.001]
+  policy:
+    name: greedy_epsilon
+    kwargs: &policy_configs
+      explore_ratio: 0.60
+      explore_exploit_interval: 20
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        clip_range: [0.01, 0.75]
+
+Exp2:
+  <<: *base_config
+  env_name: MountainCar-v0
+  algo:
+    name: ddqn
+    kwargs:
+      <<: *algo_configs
+      tau: 0.005
+      update_interval: 1
+      num_init_exp_samples: 1000
+  policy:
+    name: greedy_epsilon
+    kwargs:
+      <<: *policy_configs
+      explore_ratio: 0.60
+      explore_exploit_interval: 20
+      eps_kwargs:
+        decay: 0.001
+        update_step: 20
+        clip_range: [0.01, 0.75]
+
+Exp3:
+  <<: *base_config
+  env_name: LunarLander-v2
+  algo:
+    name: ddqn
+    kwargs:
+      <<: *algo_configs
+      num_init_exp_samples: 5000
+
+Exp4:
+  <<: *base_config
+  env_name: Acrobot-v1
+  algo:
+    name: ddqn
+    kwargs:
+      <<: *algo_configs
+      num_init_exp_samples: 2500

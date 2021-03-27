@@ -1,0 +1,36 @@
+DDPG: &base_config
+  env_name: HalfCheetah-v2
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  load_model: null
+  summary_dir: pybullet
+  algo:
+    name: ddpg
+    kwargs: &algo_configs
+      clip_norm: 5.0
+      batch_size: 100
+      tau: 0.001
+      update_interval: 1
+      num_q_nets: 3
+      reward_scale: 1.0
+      num_init_exp_samples: 10000
+      random_type: uniform
+      sigma_kwargs:
+        type: ConstantScheduler
+        value: 0.4
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.99
+        # value: 0.2
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0003
+  policy:
+    name: continuous
+    kwargs: &policy_configs
+      clip_norm: 5.0
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0003

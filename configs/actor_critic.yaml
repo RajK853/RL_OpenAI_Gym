@@ -1,0 +1,53 @@
+Discrete: &base_config
+  env_name: LunarLander-v2
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  load_model: null
+  summary_dir: summaries1
+  algo:
+    name: actor_critic
+    kwargs: &algo_configs
+      num_train: 2
+      clip_norm: 5.0
+      gamma_kwargs:
+        type: ExpScheduler            # y = e_offset + e_scale * exp^(-decay_rate*x)
+        decay_rate: 0.005
+        update_step: 50
+        e_offset: 1.0
+        e_scale: -1.0
+        clip_range: [0.995, 0.997]
+      lr_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.0025
+        update_step: 100
+        clip_range: [0.0008, 0.002]
+  policy:
+    name: discrete
+    kwargs:
+      clip_norm: 5.0
+      lr_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.0025
+        update_step: 100
+        clip_range: [0.0008, 0.002]
+
+Continuous:
+  <<: *base_config
+  env_name: LunarLanderContinuous-v2
+
+  algo:
+    name: actor_critic
+    kwargs: *algo_configs
+  policy:
+    name: gaussian
+    kwargs:
+      clip_norm: 3.0
+      mu_scale: 0.2
+      log_std_scale: 0.1
+      lr_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.0025
+        update_step: 50
+        clip_range: [0.0008, 0.002]
