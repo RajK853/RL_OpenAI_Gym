@@ -1,12 +1,16 @@
-import os
 import json
 import yaml
 import logging
-import argparse
 import numpy as np
 from importlib import reload
-from datetime import datetime
 from gym.spaces import Box, Discrete
+
+from . import Scheduler
+
+
+def get_scheduler(config_dict):
+    SchedulerClass = getattr(Scheduler, config_dict.pop("type"))
+    return SchedulerClass(**config_dict)
 
 
 def polyak_average(src_value, target_value, tau=0.5):
@@ -60,7 +64,7 @@ def get_logger(log_file):
     args:
         log_file (str) : Destination log file
     returns:
-        logging.Logger : Logger object 
+        logging.Logger : Logger object
     """
     reload(logging)                                        # Due to issue with creating root logger in Notebook
     logging.basicConfig(level=logging.DEBUG,
@@ -111,30 +115,42 @@ def random_seed_gen(num):
 def get_goal_info(df, env_name):
     reward_cols = ["Trials", "rThresh"]
     env_cond = (df.loc[:, "Environment Id"] == env_name)
-    assert any(env_cond), f"{env_name} not found!"
-    goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
-    goal_reward = 0.0 if goal_reward == "None" else float(goal_reward)
+    if any(env_cond):
+        assert any(env_cond), f"{env_name} not found!"
+        goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
+        goal_reward = 0.0 if goal_reward == "None" else float(goal_reward)
+    else:
+        print(f"# Environment id {env_name} not found. Using default goal reward and trials value!")
+        goal_reward = 0.0
+        goal_trials = 1
     return int(goal_trials), goal_reward
 
 
-def load_yaml(file_path):
+def dump_yaml(data_dict, file_path, **kwargs):
+    with open(file_path, "w") as fp:
+        yaml.dump(data_dict, fp, **kwargs)
+
+
+def load_yaml(file_path, safe_load=True):
     """
     Loads a YAML file from the given path
     :param file_path: (str) YAML file path
+    :param safe_load: (bool) If True, uses yaml.safe_load() instead of yaml.load()
     :returns: (dict) Loaded YAML file as a dictionary
     """
+    load_func = yaml.safe_load if safe_load else yaml.load
     with open(file_path, "r") as fp:
-        return yaml.safe_load(fp)
+        return load_func(fp)
 
 
-def exec_from_yaml(config_path, exec_func, title="Experiment"):
+def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True):
     """
     Executes the given function by loading parameters from a YAML file with given structure:
-    - Experiment 1 Name:
+    - Experiment_1 Name:
         argument_1: value_1
         argument_2: value_2
         ...
-    - Experiment 2 Name:
+    - Experiment_2 Name:
         argument_1: value_1
         argument_2: value_2
         ...
@@ -145,38 +161,14 @@ def exec_from_yaml(config_path, exec_func, title="Experiment"):
     :returns: (dict) Dictionary with results received from each experiment execution
     """
     result_dict = {}
-    config_dict = load_yaml(config_path)
-    for i, (exp_name, exp_kwargs) in enumerate(config_dict.items(), start=1):
+    config_dict = load_yaml(config_path, safe_load=safe_load)
+    i = 1
+    for exp_name, exp_kwargs in config_dict.items():
+        if exp_name.lower().startswith("default"):
+            continue
         print(f"\n{i}. {title}: {exp_name}")
-        result = exec_func(**exp_kwargs)        # Execute the exec_func function by unpacking the experiment keyworded-arguments
+        # Execute the exec_func function by unpacking the experiment's keyword-arguments
+        result = exec_func(**exp_kwargs)
         result_dict[exp_name] = result
+        i += 1
     return result_dict
-
-
-def parse_args():
-    """
-    Parse arguments from command line
-    returns:
-         argparse.ArgumentParser : Parsed arguments
-    """
-    # TODO: 1) Update csv with best hyper-parameter values, 2) Restoring model does not require algorithm
-    #  or (load env_name, algo, policy from meta data)
-    # 3) Save and load only policy
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--env_name", help="Open AI Gym environment name", type=str)
-    arg_parser.add_argument("--num_exec", help="Number of executions", type=int, default=1)
-    arg_parser.add_argument("--summ_dir", help="Summary directory", type=str, default=None)
-    arg_parser.add_argument("--epochs", help="Number of epochs", type=int, default=1000)
-    arg_parser.add_argument("--render", help="Render on the screen", type=boolean_string, default=False)
-    arg_parser.add_argument("--training", help="Training or testing mode", type=boolean_string, default=True)
-    arg_parser.add_argument("--record_interval", help="Video record interval (in epoch)", type=int, default=10)
-    arg_parser.add_argument("--load_model", help="Model checkpoint to load weights", type=str, default=None)
-    arg_parser.add_argument("--algorithm", help="Algorithm name", type=str, default="ddqn")
-    arg_parser.add_argument("--policy", help="Policy name", type=str, default="greedy_epsilon")
-
-    _args = arg_parser.parse_args()
-    env_name = _args.env_name
-    if _args.summ_dir is None:
-        date_time = datetime.now().strftime("%d.%m.%Y %H.%M")
-        _args.summ_dir = os.path.join("summaries", f"{env_name} {date_time}")
-    return _args
