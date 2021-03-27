@@ -3,14 +3,17 @@ import os.path as os_path
 import tensorflow.compat.v1 as tf_v1
 
 from src.progressbar import ProgressBar
-from src.utils import get_space_size, json_dump
+from src.utils import get_space_size, json_dump, dump_yaml
 
 
 class BaseAlgorithm:
     VALID_POLICIES = {}
 
     def __init__(self, *, sess, env, policy, batch_size, render, goal_trials, goal_reward, load_model=None,
-                 summary_dir=None, training=True):
+                 summary_dir=None, training=True, clip_norm=5.0, seed=None, name="algo"):
+        if seed is not None:
+            np.random.seed(seed)
+        self.scope = name
         self.env = env
         self.policy = policy
         self.action_space = env.action_space
@@ -20,14 +23,12 @@ class BaseAlgorithm:
         self.sess = sess
         self.render = render
         self.batch_size = batch_size
+        self.clip_norm = clip_norm
         self.load_model = load_model
         # Setup summaries
         self.tag = self.env.spec.id
         self.summary_dir = summary_dir
-        if summary_dir is None:
-            self.summary_writer = None
-        else:
-            self.summary_writer = tf_v1.summary.FileWriter(summary_dir, sess.graph)
+        self.summary_writer = None
         self._saver = None
         self.training = training
         # Goal variables
@@ -47,6 +48,8 @@ class BaseAlgorithm:
         self.summary_init_objects = (self.policy, )
         self.scalar_summaries = ("epoch_reward", "epoch_length")
         self.histogram_summaries = ()
+        self.scalar_summaries_tf = ()
+        self.histogram_summaries_tf = ()
         self.validate_policy()
 
     def validate_policy(self):
@@ -57,14 +60,13 @@ class BaseAlgorithm:
 
     @staticmethod
     def get_summaries(obj):
-        return obj.scalar_summaries + obj.histogram_summaries
+        return obj.scalar_summaries + obj.scalar_summaries_tf + obj.histogram_summaries + obj.histogram_summaries_tf
 
     def init_summaries(self):
         summaries = {"algo": self.get_summaries(self)}
         for obj in self.summary_init_objects:
             obj.init_summaries(tag=self.tag)
             summaries[obj.scope] = self.get_summaries(obj)
-        # summaries = dict2str(summaries)
         print("\n# Initialized summaries:")
         for key, value in summaries.items():
             print(f"  {key}: {value}")
@@ -101,6 +103,15 @@ class BaseAlgorithm:
         self.hook_after_step()
         return next_state, done
 
+    def dump_goal_summary(self, file_path):
+        dump_dict = {"num_goals_achieved": self.goals_achieved,
+                     "first_goal": dict(zip(("epoch", "reward"), self.first_goal)),
+                     "max_mean_reward": dict(zip(("epoch", "reward"), self.max_mean_reward))}
+        if file_path.endswith(".json"):
+            json_dump(dump_dict, file_name=file_path, indent=4)
+        elif file_path.endswith(".yaml"):
+            dump_yaml(dump_dict, file_path=file_path)
+
     def _run_once(self):
         """
         Runs the simulation for one epoch
@@ -129,7 +140,8 @@ class BaseAlgorithm:
             total_epochs (int) : Total number of epochs
         """
         self.hook_before_train(epochs=total_epochs)
-        progressbar = ProgressBar(total_epochs, title=f"# {'Training' if self.training else 'Testing'} agent:", info_text="Epoch: ({epoch}/%s)"%(total_epochs))
+        progressbar = ProgressBar(total_epochs, title=f"# {'Training' if self.training else 'Testing'} agent:",
+                                  info_text="Epoch: ({epoch}/%s)" % total_epochs)
         print()
         for self.epoch in range(1, total_epochs + 1):
             self._run_once()
@@ -137,7 +149,7 @@ class BaseAlgorithm:
             progressbar.step(epoch=self.epoch)
         self.hook_after_train()
 
-    def save_model(self, chkpt_dir):
+    def save_model(self, chkpt_dir):  # TODO: Save policy and/or critics?
         """
         Saves variables from the session
         args:
@@ -174,45 +186,55 @@ class BaseAlgorithm:
             hist.bucket = counts
             return hist
 
-        if self.summary_writer is not None:
-            for summary_attr in self.scalar_summaries:
-                attr = getattr(self, summary_attr)
-                self.write_summary(f"{self.tag}/{summary_attr}", step=step, simple_value=attr)
-            for summary_attr in self.histogram_summaries:
-                attr = np.array(getattr(self, summary_attr))
+        def write_all_summaries(obj):
+            summary_scope = f"{self.tag}/{obj.scope}"
+            for summary_attr in obj.scalar_summaries:
+                attr = getattr(obj, summary_attr)
+                self.write_summary(f"{summary_scope}/{summary_attr}", step=step, simple_value=attr)
+            for summary_attr in obj.histogram_summaries:
+                attr = np.array(getattr(obj, summary_attr))
                 histogram = get_histogram(attr)
-                self.write_summary(f"{self.tag}/{summary_attr}", step=step, histo=histogram)
-            for obj in self.summary_init_objects:
-                summary = getattr(obj, "summary")
-                if summary:
-                    self.summary_writer.add_summary(summary, step)
+                self.write_summary(f"{summary_scope}/{summary_attr}", step=step, histo=histogram)
+
+        if self.summary_writer is not None:
+            for summ_obj in [self, *self.summary_init_objects]:
+                write_all_summaries(summ_obj)
+                if hasattr(summ_obj, "summary"):
+                    summary = getattr(summ_obj, "summary")
+                    if summary:
+                        self.summary_writer.add_summary(summary, step)
 
     def hook_before_train(self, **kwargs):
+        self.policy.hook_before_train(**kwargs)
         if self.training:
             self.init_summaries()
-            # assert self.goal_trials <= kwargs["epochs"], "Number of epochs must be at least the number of goal trials!"
             print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
             self.sess.run(tf_v1.global_variables_initializer())
         else:
             assert self.load_model is not None, "No model given to test!"
         if self.load_model is not None:
             self.restore_model(os_path.join(self.load_model, "model.chkpt"))          # Restore model variables
+        if self.summary_dir is not None:
+            self.summary_writer = tf_v1.summary.FileWriter(self.summary_dir, self.sess.graph)
 
     def hook_before_epoch(self, **kwargs):
         self.epoch_reward = 0.0
         self.epoch_length = 0
+        self.policy.hook_before_epoch(**kwargs)
 
     def hook_before_step(self, **kwargs):
         self.steps += 1
         self.epoch_length += 1
+        self.policy.hook_before_step(**kwargs)
 
     def hook_after_step(self, **kwargs):
-        pass
+        self.policy.hook_after_step(**kwargs)
 
     def hook_at_epoch_end(self, **kwargs):
         self.epoch_rewards.append(self.epoch_reward)
 
     def hook_after_epoch(self, **kwargs):
+        self.policy.hook_after_epoch(**kwargs)
         if len(self.epoch_rewards) >= self.goal_trials:
             self.mean_reward = np.mean(self.epoch_rewards[-self.goal_trials:])
             if self.mean_reward >= self.goal_reward:
@@ -223,6 +245,7 @@ class BaseAlgorithm:
                 self.max_mean_reward = (self.epoch, self.mean_reward)
 
     def hook_after_train(self, **kwargs):
+        self.policy.hook_after_train(**kwargs)
         if self.training:
             print(f"\n# Goal Summary")
             print(f"  Number of achieved goals: {self.goals_achieved}")
@@ -231,9 +254,6 @@ class BaseAlgorithm:
             trials = self.goal_trials
             epoch, reward = self.max_mean_reward
             print(f"  Best mean reward over {trials} trials achieved at epoch {epoch} with reward {reward:.3f}")
-            json_file = os_path.join(os_path.dirname(self.summary_dir), "goal_info.json")
-            dump_dict = {"num_goals_achieved": self.goals_achieved,
-                         "first_goal": dict(zip(("epoch", "reward"), self.first_goal)),
-                         "max_mean_reward": dict(zip(("epoch", "reward"), self.max_mean_reward))}
-            json_dump(dump_dict, file_name=json_file, indent=4)
-            print(f"\n# Goal info saved at '{json_file}'")
+            file_path = os_path.join(os_path.dirname(self.summary_dir), "goal_info.yaml")
+            self.dump_goal_summary(file_path)
+            print(f"\n# Goal info saved at '{file_path}'")
