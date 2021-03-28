@@ -4,8 +4,8 @@ from .base_algorithm import BaseAlgorithm
 
 class OnPolicyAlgorithm(BaseAlgorithm):
 
-    def __init__(self, **kwargs):
-        super(OnPolicyAlgorithm, self).__init__(**kwargs)
+    def __init__(self, batch_size=None, **kwargs):
+        super(OnPolicyAlgorithm, self).__init__(batch_size=batch_size, **kwargs)
         self.field_names = ()
         self.trajectory = {}
 
@@ -25,3 +25,9 @@ class OnPolicyAlgorithm(BaseAlgorithm):
 
     def train(self):
         raise NotImplementedError
+
+    def hook_after_epoch(self, **kwargs):
+        super().hook_after_epoch(**kwargs)
+        if self.training:
+            self.add_summaries(self.epoch)
+            self.trajectory.clear()
