@@ -12,9 +12,10 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         self.scalar_summaries += ("buffer_size", )
 
     def init_explore(self):
-        env = self.env.unwrapped           # Unwrap the original environment
+        # Unwrap the original environment which does not record video
+        env = self.env.unwrapped
         total_steps = self.num_init_exp_samples
-        pbar = ProgressBar(total_steps, title=f"# Collecting {total_steps} initial random samples:", display_interval=100)
+        pbar = ProgressBar(total_steps, title=f"# Collecting {total_steps} initial samples:", display_interval=100)
         steps = 0
         if self.load_model is None:
             action_sample_func = lambda s: env.action_space.sample()  
