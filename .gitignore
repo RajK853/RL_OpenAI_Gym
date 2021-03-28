@@ -103,6 +103,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+chromedata/
 
 # Spyder project settings
 .spyderproject
@@ -123,7 +124,11 @@ dmypy.json
 .pyre/
 
 # Summary directory
-summaries
+summaries/
+summaries1/
+XX/
+pybullet/
+
 
 # Pycharm coding style
 .idea/
