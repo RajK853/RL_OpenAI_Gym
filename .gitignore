@@ -8,9 +8,7 @@ __pycache__/
 
 # Summary directory
 summaries/
-summaries1/
-XX/
-pybullet/
+BipedalWalkerHardcoreV3/
 
 # Pycharm coding style
 .idea/
