@@ -3,75 +3,67 @@ import tensorflow_probability as tfp
 
 from src.Network.neural_network import NeuralNetwork
 from src.Network.utils import get_clipped_train_op
+from src.utils import get_scheduler
 from .base_policy import BasePolicy
 from src import Scheduler
 
 tfd = tfp.distributions
 tfb = tfp.bijectors
 
-l2 = tf_v1.keras.regularizers.l2
+regularizers = tf_v1.keras.regularizers
+initializers = tf_v1.keras.initializers
+constraints = tf_v1.keras.constraints
+
+DEFAULT_KERNEL_KWARGS = {
+    "kernel_regularizer": regularizers.l2(1e-3),
+    "bias_regularizer": regularizers.l2(1e-6),
+}
+
 DEFAULT_LAYERS = [
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
     {"type": "LayerNormalization"},
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
-    {"type": "Dense", "units": 1}
+    {"type": "Activation", "activation": "relu"},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
+    {"type": "LayerNormalization"},
+    {"type": "Activation", "activation": "relu"},
 ]
-
-
-class SquashBijector(tfp.bijectors.Bijector):
-    """
-    This squash bijector is derived from the given source:
-    https://github.com/avisingh599/reward-learning-rl/blob/master/softlearning/distributions/squash_bijector.py
-    """
-    def __init__(self, validate_args=False, name="tanh"):
-        super(SquashBijector, self).__init__(forward_min_event_ndims=0, validate_args=validate_args, name=name)
-
-    def _forward(self, x):
-        return tf_v1.tanh(x)
-
-    def _inverse(self, y):
-        return tf_v1.atanh(y)
-
-    def _forward_log_det_jacobian(self, x):
-        return 2.0*(tf_v1.log(2.0) - x - tf_v1.nn.softplus(-2.0*x))
 
 
 class GaussianPolicy(BasePolicy):
 
-    def __init__(self, *, lr_kwargs, layers=None, alpha=1e-3, learn_std=False, std_value=0.1, mu_range=None,
-                 log_std_range=None, **kwargs):
+    def __init__(self, *, lr_kwargs, layers=None, preprocessors=None, learn_std=True, std_value=0.1,
+                 mu_range=None, log_std_range=None, **kwargs):
         super(GaussianPolicy, self).__init__(**kwargs)
-        scheduler = getattr(Scheduler, lr_kwargs.pop("type"))
-        self.lr_scheduler = scheduler(**lr_kwargs)
-        self.alpha = alpha
+        self.lr_scheduler = get_scheduler(lr_kwargs)
+        self.schedulers += (self.lr_scheduler, )
+        self.learn_std = learn_std
         self.mu_range = (-2.0, 2.0) if mu_range is None else mu_range
-        self.log_std_range = (-20, 0.1) if log_std_range is None else log_std_range
+        self.log_std_range = (-10, 0.3) if log_std_range is None else log_std_range
         assert not self.discrete_action_space, "Action space for the Gaussian Policy must be continuous!"
         # Placeholders
         self.lr_ph = tf_v1.placeholder("float32", shape=(), name="lr_ph")
-        self.targets_ph = tf_v1.placeholder("float32", shape=(None, 1), name="target_ph")
         # Create model
         if layers is None:
             layers = DEFAULT_LAYERS
-        # layers[-1]["units"] = 2*self.action_size
         self.layers = layers
-        self.base_model = NeuralNetwork(self.scope, input_shape=self.obs_shape, layers=self.layers)
-        self.mu = tf_v1.keras.layers.Dense(self.action_size, activation=None, name="mu")(self.base_model.output)
+        self.preprocessors = preprocessors
+        self.base_model = NeuralNetwork(self.scope, input_shapes=[self.obs_shape], layers=self.layers,
+                                        preprocessors=self.preprocessors)
+        self.mu = tf_v1.keras.layers.Dense(self.action_size, activation=None)(self.base_model.output)
         self.mu = tf_v1.clip_by_value(self.mu, *self.mu_range)
-        if learn_std:
-            self.log_std = tf_v1.keras.layers.Dense(self.action_size, name="log_std")(self.base_model.output)
+        if self.learn_std:
+            self.log_std = tf_v1.keras.layers.Dense(self.action_size)(self.base_model.output)
             self.log_std = tf_v1.clip_by_value(self.log_std, *self.log_std_range)
             self.std = tf_v1.exp(self.log_std)
+            self.raw_action_model = tf_v1.keras.Model(inputs=[self.base_model.input], outputs=[self.mu, self.std])
         else:
             self.std = tf_v1.constant([std_value]*self.action_size, dtype="float32")
-        self.raw_action_model = tf_v1.keras.Model(inputs=[self.base_model.input], outputs=[self.mu, self.std])
-        norm_dist = tfd.MultivariateNormalDiag(loc=tf_v1.zeros(self.action_size),
-                                               scale_diag=tf_v1.ones(self.action_size))
-        norm_dist = tfd.Independent(norm_dist)
+            self.raw_action_model = tf_v1.keras.Model(inputs=[self.base_model.input], outputs=[self.mu])
         batch_size = tf_v1.shape(self.mu)[0]
-        latents = norm_dist.sample(batch_size)
-        bijector = tfb.Chain([SquashBijector(), tfb.Affine(shift=self.mu, scale_diag=self.std)])
-        self.actions = bijector.forward(latents)
+        norm_dist = tfd.Normal(loc=tf_v1.zeros(self.action_size), scale=tf_v1.ones(self.action_size))
+        z = norm_dist.sample(batch_size)
+        raw_actions = self.mu + z*self.std          # Reparameterization trick
+        self.actions = tf_v1.tanh(raw_actions)
         self.deterministic_actions = tf_v1.tanh(self.mu)
         self.model = tf_v1.keras.Model(inputs=[self.base_model.input], outputs=[self.actions])
         # Loss parameters
@@ -79,22 +71,29 @@ class GaussianPolicy(BasePolicy):
         self.train_op = None
         # Summary parameters
         self.scalar_summaries += ("lr", )
-        self.scalar_summaries_tf += ("loss", "mean_entropy", "min_mu", "mean_mu", "max_mu", "min_std", "mean_std",
+        self.scalar_summaries_tf += ("loss", "mean_log_actions", "min_mu", "mean_mu", "max_mu", "min_std", "mean_std",
                                      "max_std")
-        self.histogram_summaries_tf += ("log_actions", "actions", "mu", "std")
+        self.histogram_summaries_tf += ("actions", "mu", "std", "log_actions")
 
-    def log_prob(self, state, action, **kwargs):
-        mu, std = self.raw_action_model(state)
-        norm_dist = tfd.MultivariateNormalDiag(loc=tf_v1.zeros(self.action_size),
-                                               scale_diag=tf_v1.ones(self.action_size))
-        bijector = tfb.Chain([SquashBijector(), tfb.Affine(shift=mu, scale_diag=std)])
-        dist = tfd.TransformedDistribution(distribution=norm_dist, bijector=bijector)
-        log_pis = dist.log_prob(action)
-        return log_pis
+    def mu_and_std(self, state):
+        if self.learn_std:
+            mu, std = self.raw_action_model(state)
+        else:
+            mu = self.raw_action_model(state)
+            std = self.std
+        return mu, std
+
+    def log_prob(self, state, action):
+        mu, std = self.mu_and_std(state)
+        norm_dist = tfd.Normal(loc=mu, scale=std)
+        log_probs = norm_dist.log_prob(tf_v1.atanh(action))
+        log_probs -= tf_v1.log(1.0 - action**2 + 1e-8)
+        log_probs = tf_v1.reduce_sum(log_probs, axis=-1, keepdims=True)
+        return log_probs
 
     @property
     def log_actions(self):
-        return self.log_prob(self.base_model.input, self.actions)
+        return self.log_prob([self.base_model.input], self.actions)
 
     @property
     def lr(self):
@@ -125,7 +124,7 @@ class GaussianPolicy(BasePolicy):
         return tf_v1.reduce_max(self.std)
 
     @property
-    def mean_entropy(self):
+    def mean_log_actions(self):
         return tf_v1.reduce_mean(-self.log_actions)
 
     @property
@@ -144,14 +143,6 @@ class GaussianPolicy(BasePolicy):
     def trainable_vars(self):
         return self.model.trainable_variables
 
-    def init_default_loss(self):
-        log_loss = -self.log_actions * self.targets_ph
-        entropy_loss = 0.0  # -self.alpha * self.dist.entropy()
-        loss = log_loss + entropy_loss
-        optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr_ph)
-        train_op = get_clipped_train_op(loss, optimizer, var_list=self.trainable_vars, clip_norm=self.clip_norm)
-        self.setup_loss(loss, train_op)
-
     def setup_loss(self, loss, train_op):
         self._loss = loss
         self.train_op = train_op
@@ -168,7 +159,3 @@ class GaussianPolicy(BasePolicy):
         results = sess.run(train_ops, feed_dict={self.lr_ph: self.lr, **feed_dict})
         if self.summary_op is not None:
             self.summary = results[-1]
-
-    def hook_after_epoch(self, **kwargs):
-        super().hook_after_epoch(**kwargs)
-        self.lr_scheduler.increment()
