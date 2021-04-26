@@ -14,10 +14,12 @@ class BasePolicy:
         self.action_size = get_space_size(self.action_space)
         self.observation_size = get_space_size(self.observation_space)
         self.discrete_action_space = isinstance(self.action_space, Discrete)
+        self.schedulers = ()
         self.scalar_summaries = ()
         self.scalar_summaries_tf = ()
         self.histogram_summaries = ()
         self.histogram_summaries_tf = ()
+        self.model = None
         self.summary_op = None
         self.summary = None
         self._loss = None
@@ -45,6 +47,10 @@ class BasePolicy:
 
     def clip_action(self, action, **kwargs):
         return tf_v1.clip_by_value(action, self.action_space.low, self.action_space.high, **kwargs)
+
+    def increment_schedulers(self):
+        for scheduler in self.schedulers:
+            scheduler.increment()
 
     def reshape_state(self, states):
         states = states.reshape(-1, *self.obs_shape)
@@ -74,10 +80,19 @@ class BasePolicy:
         pass
 
     def hook_after_epoch(self, **kwargs):
-        pass
+        self.increment_schedulers()
 
     def hook_after_train(self, **kwargs):
         pass
+
+    def save(self, file_path, verbose=True, **kwargs):
+        policy_type = self.__class__.__name__
+        if self.model is None:
+            print(f"# {policy_type} has not defined any policy model!")
+        else:
+            self.model.save(file_path, save_format="tf")
+            if verbose:
+                print(f"# Saved {policy_type} to '{file_path}'!")
 
     def init_summaries(self, tag="", force=False):
         if self.summary_op is None or force:
