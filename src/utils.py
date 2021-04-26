@@ -1,20 +1,20 @@
+import os
 import json
 import yaml
-import logging
 import numpy as np
-from importlib import reload
 from gym.spaces import Box, Discrete
 
 from . import Scheduler
 
 
 def get_scheduler(config_dict):
+    """
+    Returns a Scheduler object based on the config_dict
+    :param config_dict: (dict) Dictionary with arguments for a given scheduler class
+    :return: (Scheduler) Scheduler object
+    """
     SchedulerClass = getattr(Scheduler, config_dict.pop("type"))
     return SchedulerClass(**config_dict)
-
-
-def polyak_average(src_value, target_value, tau=0.5):
-    return tau*src_value + (1-tau)*target_value
 
 
 def get_space_size(space):
@@ -26,15 +26,36 @@ def get_space_size(space):
         raise NotImplementedError(f"Invalid space of type '{type(space)}'!")
 
 
-def standardize_array(array, default_std=1e-8):
+def polyak_average(src_value, target_value, tau=0.001):
+    """
+    Returns the Polyak average between src and target values
+    :param src_value: (int/float) Source value
+    :param target_value: (int/float) Target value
+    :param tau: (float) Weight update coefficient. Soft update when tau < 1.0 and hard update when tau == 1.0
+    :returns: (float) Polyak average value 
+    """
+    return tau*src_value + (1-tau)*target_value
+
+
+def standardize_array(array):
+    """
+    Z-transformation of the given array
+    :param array: (np.ndarray) Data array
+    :returns: (np.ndarray) Standarized array
+    """
     array = np.array(array)
     std_value = array.std()
     if std_value <= 0:
-        std_value = default_std
+        std_value = 1e-8
     return (array-array.mean())/std_value
 
 
 def normalize_array(array):
+    """
+    Min-Max normalization of the given array
+    :param array: (np.ndarray) Data array
+    :returns: (np.ndarray) Normalized array 
+    """
     max_value = max(array)
     min_value = min(array)
     return (array-min_value)/(max_value-min_value)
@@ -42,12 +63,10 @@ def normalize_array(array):
 
 def dict2str(feed_dict, sep=", "):
     """
-    Convert dictionary into a single string
-    args:
-        feed_dict (dict) : Dictionary to convert
-        sep (str) : Separator to join pair of key:value
-    returns:
-        str : Converted dict as string
+    Converts dictionary into a single string
+    :param feed_dict: (dict) Dictionary to convert
+    :param sep: (str) Separator to join pair of key:value
+    :returns: (str) Converted dict as string
     """
     dict_strs = []
     for key, value in feed_dict.items():
@@ -58,61 +77,34 @@ def dict2str(feed_dict, sep=", "):
     return sep.join(dict_strs)
 
 
-def get_logger(log_file):
-    """
-    Returns root logger object to log messages in a file and on console
-    args:
-        log_file (str) : Destination log file
-    returns:
-        logging.Logger : Logger object
-    """
-    reload(logging)                                        # Due to issue with creating root logger in Notebook
-    logging.basicConfig(level=logging.DEBUG,
-                        format="%(message)s",
-                        datefmt="%m-%d %H:%M",
-                        filename=log_file,
-                        filemode="a")
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(message)s")
-    console.setFormatter(formatter)
-    logger = logging.getLogger()
-    logger.addHandler(console)
-    return logger
-
-
 def json_dump(data_dict, file_name, **kwargs):
+    """
+    Dumps given dictionary into a JSON file
+    :param data_dict: (duct) Data dictionary
+    :param file_path: (str) Dump JSON file path
+    :param **kwargs: (dict) Additional kwargs for json.dump() function
+    """
     with open(file_name, "w") as fp:
         json.dump(data_dict, fp=fp, **kwargs)
 
 
-def eval_dict_values(config_dict):
-    """
-    Evaluates the values of the dictionary
-    args:
-        config_dict (dict) : Dictionary
-    """
-    return {key: eval(value) for key, value in config_dict.items()}
-
-
-def boolean_string(s):
-    """
-    Checks if given string indicates boolean values True or False
-    args:
-        s (str) : String to check
-    """
-    s = s.lower()
-    if s not in ('false', 'true'):
-        raise ValueError('Not a valid boolean string')
-    return s == 'true'
-
-
 def random_seed_gen(num):
+    """
+    Generator to produce N random seeds
+    :param num: (int) Number of random seeds
+    :returns: (int) Random seed number
+    """
     for _ in range(num):
         yield np.random.randint(0, 100)
 
 
 def get_goal_info(df, env_name):
+    """
+    Returns goal info (goal trials and goal reward) from the given DataFrame
+    :param df: (pandas.DataFrame) DataFrame with goal information of the environment
+    :param env_name: (str) Name of the environment to retrive the goal information
+    :returns: (int, float) Goal trials and goal reward
+    """
     reward_cols = ["Trials", "rThresh"]
     env_cond = (df.loc[:, "Environment Id"] == env_name)
     if any(env_cond):
@@ -120,13 +112,19 @@ def get_goal_info(df, env_name):
         goal_trials, goal_reward = df[env_cond].loc[:, reward_cols].to_numpy().squeeze()
         goal_reward = 0.0 if goal_reward == "None" else float(goal_reward)
     else:
-        print(f"# Environment id {env_name} not found. Using default goal reward and trials value!")
+        print(f"# Environment id {env_name} not found. Using default goal reward (0.0) and goal trials (1) values!")
         goal_reward = 0.0
         goal_trials = 1
     return int(goal_trials), goal_reward
 
 
 def dump_yaml(data_dict, file_path, **kwargs):
+    """
+    Dumps given dictionary into a YAML file
+    :param data_dict: (duct) Data dictionary
+    :param file_path: (str) Dump YAML file path
+    :param **kwargs: (dict) Additional kwargs for yaml.dump() function
+    """
     with open(file_path, "w") as fp:
         yaml.dump(data_dict, fp, **kwargs)
 
@@ -143,9 +141,35 @@ def load_yaml(file_path, safe_load=True):
         return load_func(fp)
 
 
-def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True):
+def load_files(dir_path, file_types=None):
+    """
+    Recursively searches and returns the file paths of given types located in the given directory path
+    :param dir_path: (str) Root directory path to search
+    :param file_types: (iter) Collection of file extension to search. Defaults to None
+    :returns: (list) List of found file paths 
+    """
+    
+    def has_type(file_name, types):
+        if types is None:
+            return True
+        _, file_type = os.path.splitext(file_name)
+        return file_type in types
+
+    file_paths = []
+    for root_dir, _, files in os.walk(dir_path):
+        if files:
+            matched_files = [os.path.join(root_dir, file_path) for file_path in files if has_type(file_path, file_types)]
+            file_paths.extend(matched_files)
+    return file_paths
+
+
+def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True, skip_prefix="default"):
     """
     Executes the given function by loading parameters from a YAML file with given structure:
+    NOTE: The argument names in the YAML file should match the argument names of the given execution function.
+    
+    :Example:
+
     - Experiment_1 Name:
         argument_1: value_1
         argument_2: value_2
@@ -154,21 +178,31 @@ def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True):
         argument_1: value_1
         argument_2: value_2
         ...
-    NOTE: The argument names in the YAML file should match the argument names of the given execution function.
+    
     :param config_path: (str) YAML file path
     :param exec_func: (callable) Function to execute with the loaded parameters
     :param title: (str) Label for each experiment
+    :param safe_load: (bool) When True, uses yaml.safe_load. Otherwise uses yaml.load
+    :param skip_prefix: (str) Experiment names with given prefix will not be executed 
     :returns: (dict) Dictionary with results received from each experiment execution
     """
-    result_dict = {}
-    config_dict = load_yaml(config_path, safe_load=safe_load)
     i = 1
-    for exp_name, exp_kwargs in config_dict.items():
-        if exp_name.lower().startswith("default"):
-            continue
-        print(f"\n{i}. {title}: {exp_name}")
-        # Execute the exec_func function by unpacking the experiment's keyword-arguments
-        result = exec_func(**exp_kwargs)
-        result_dict[exp_name] = result
-        i += 1
+    result_dict = {}
+    if os.path.isdir(config_path):
+        yaml_paths = load_files(config_path, file_types=[".yaml"])
+    elif config_path.endswith(".yaml"):
+        yaml_paths = [config_path]
+    else:
+        raise NotImplementedError("Invalid config_path value. Must be either a path to a .yaml file or a path to directory with .yaml files!")
+    for yaml_path in yaml_paths:
+        config_dict = load_yaml(yaml_path, safe_load=safe_load)
+        for exp_name, exp_kwargs in config_dict.items():
+            if exp_name.lower().startswith(skip_prefix):
+                print(f"# Skipped {exp_name}")
+                continue
+            print(f"\n{i}. {title}: {exp_name}")
+            # Execute the exec_func function by unpacking the experiment's keyword-arguments
+            result = exec_func(**exp_kwargs)
+            result_dict[exp_name] = result
+            i += 1
     return result_dict
