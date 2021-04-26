@@ -1,15 +1,23 @@
 import tensorflow.compat.v1 as tf_v1
 from .neural_network import NeuralNetwork
 
-l2 = tf_v1.keras.regularizers.l2
+regularizers = tf_v1.keras.regularizers
+initializers = tf_v1.keras.initializers
+constraints = tf_v1.keras.constraints
 
+DEFAULT_KERNEL_KWARGS = {
+    "kernel_regularizer": regularizers.l2(1e-3),
+    "bias_regularizer": regularizers.l2(1e-6)
+}
 DEFAULT_LAYERS = [
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
     {"type": "LayerNormalization"},
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
-    {"type": "Dense", "units": 1, "activation": None},
+    {"type": "Activation", "activation": "relu"},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
+    {"type": "LayerNormalization"},
+    {"type": "Activation", "activation": "relu"},
+    {"type": "Dense", "units": 1},
 ]
-
 
 class QNetwork(NeuralNetwork):
     """

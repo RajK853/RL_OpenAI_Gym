@@ -5,27 +5,38 @@ from src.utils import get_scheduler
 from .base_policy import BasePolicy
 from src.Network.neural_network import NeuralNetwork
 
-l2 = tf_v1.keras.regularizers.l2
+regularizers = tf_v1.keras.regularizers
+
+DEFAULT_KERNEL_KWARGS = {
+    "kernel_regularizer": regularizers.l2(1e-3),
+    "bias_regularizer": regularizers.l2(1e-6)
+}
+
 DEFAULT_LAYERS = [
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
     {"type": "LayerNormalization"},
-    {"type": "Dense", "units": 256, "activation": "relu", "kernel_regularizer": l2(1e-8)},
-    {"type": "Dense", "units": 1, "activation": "tanh"},
+    {"type": "Activation", "activation": "relu"},
+    {"type": "Dense", "units": 256, **DEFAULT_KERNEL_KWARGS},
+    {"type": "LayerNormalization"},
+    {"type": "Activation", "activation": "relu"},
+    {"type": "Dense", "units": 1, "activation": "tanh"},        # TODO: Don't include output layer here
 ]
 
 
 class ContinuousPolicy(BasePolicy):
 
-    def __init__(self, *, lr_kwargs, layers=None, **kwargs):
-        self.scope = self.__class__.__name__
+    def __init__(self, *, lr_kwargs, layers=None, preprocessors=None, **kwargs):
         super(ContinuousPolicy, self).__init__(**kwargs)
         self.lr_scheduler = get_scheduler(lr_kwargs)
+        self.schedulers += (self.lr_scheduler, )
         self.lr_ph = tf_v1.placeholder("float32", shape=[], name=f"{self.scope}/lr_ph")
         if layers is None:
             layers = DEFAULT_LAYERS
         layers[-1]["units"] = self.action_size
         self.layers = layers
-        self.model = NeuralNetwork(self.scope, input_shape=self.obs_shape, layers=self.layers)
+        self.preprocessors = preprocessors
+        self.model = NeuralNetwork(self.scope, input_shapes=[self.obs_shape], layers=self.layers,
+                                   preprocessors=self.preprocessors)
         self._loss = None
         self.train_op = None
         # Summary parameters
@@ -67,7 +78,3 @@ class ContinuousPolicy(BasePolicy):
         results = sess.run(train_ops, feed_dict={self.lr_ph: self.lr, **feed_dict})
         if self.summary_op is not None:
             self.summary = results[-1]
-
-    def hook_after_epoch(self, **kwargs):
-        super().hook_after_epoch(**kwargs)
-        self.lr_scheduler.increment()
