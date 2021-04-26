@@ -5,51 +5,55 @@ import random
 from datetime import datetime
 import tensorflow.compat.v1 as tf_v1
 from tensorflow.python.util import deprecation
+from pandas import read_csv
 
 from src.config import get_algo, get_policy
 from src.utils import exec_from_yaml, get_goal_info, dump_yaml
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memory_fraction=0.5),
-                              allow_soft_placement=True)
+TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(), allow_soft_placement=True)
 
+ENV_INFO_FILE = r"assets/env_info.csv"
 
 def load_goal_info(env_name):
-    if "BulletEnv" in env_name:
-        import pybullet_envs
-        goal_trials, goal_reward = (100, 0)
-        # TODO: Remove the warnings later
-        print(f"# PyBullet environment '{env_name}' detected! Using the default goal trial {goal_trials} "
-              f"and threshold reward {goal_reward}")
-    else:
-        from pandas import read_csv
-        env_info_file = r"assets/env_info.csv"
-        df = read_csv(env_info_file)
-        goal_trials, goal_reward = get_goal_info(df, env_name=env_name)
+    df = read_csv(ENV_INFO_FILE)
+    goal_trials, goal_reward = get_goal_info(df, env_name=env_name)
     return goal_trials, goal_reward
 
 
-def get_env(env_name, seed, record_interval=0, dump_dir=None):
+def get_env(env_name, *, dump_dir, seed=None, record_interval=0, include=None, pre_render=False):
     def record_video(epoch):
-        if record_interval > 0:
-            return ((epoch + 1) % record_interval) == 0
-        return False
-
+        return ((epoch + 1) % record_interval) == 0
+    # Import any required gym environment module
+    if include is not None:
+        import importlib
+        print(f"# Importing: {include}")
+        for module in include:
+            importlib.import_module(module)
+    # Load the environment and apply required wrappers
     env = gym.make(env_name)
-    env.seed(seed)
-    env = gym.wrappers.Monitor(env, dump_dir, force=True, video_callable=record_video)
+    if seed is not None:
+        env.seed(seed)
+    if pre_render:
+        env.render()
+    if isinstance(env.observation_space, gym.spaces.Dict):
+        env = gym.wrappers.FilterObservation(env, filter_keys=["observation", "desired_goal"])  # TODO: Take filter_keys as arguments?
+        env = gym.wrappers.FlattenObservation(env)
+    video_callable = record_video if record_interval > 0 else lambda x: False
+    env = gym.wrappers.Monitor(env, dump_dir, force=True, video_callable=video_callable)
     return env
 
 
 def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed=None, load_model=None, render=False,
-         summary_dir="summaries"):
+         summary_dir="summaries", include=None):
     seed = random.randint(0, 100) if seed is None else seed
     date_time = datetime.now().strftime("%d.%m.%Y_%H.%M")
     goal_trials, goal_reward = load_goal_info(env_name)
     exp_summary_dir = os.path.join(summary_dir, f"{env_name}-{algo['name']}-{policy['name']}-{date_time}")
     os.makedirs(exp_summary_dir, exist_ok=True)
-    env = get_env(env_name, seed, record_interval, dump_dir=os.path.join(exp_summary_dir, "videos"))
+    video_dump_dir = os.path.join(exp_summary_dir, "videos")
+    env = get_env(env_name, seed=seed, record_interval=record_interval, dump_dir=video_dump_dir, include=include)
     model_summary_dir = os.path.join(exp_summary_dir, "model") if training else None
     tf_v1.reset_default_graph()
     with tf_v1.Session(config=TF_CONFIG) as sess:
@@ -60,7 +64,7 @@ def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed
             if training:
                 print("\n# Training:")
                 print("  Training information are available via Tensorboard with the given command:")
-                print(f"  tensorboard --logdir {summary_dir} --host localhost")
+                print(f"  tensorboard --host localhost --logdir {summary_dir}")
                 config_dict = {"epochs": epochs, 
                                "seed": seed, 
                                "load_model": load_model, 
@@ -88,10 +92,8 @@ def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed
             _algo.run(total_epochs=epochs)                     # Run the algorithm for given epochs
         except KeyboardInterrupt:
             print("\n# Interrupted by the user!")
+            _algo.hook_after_train()
         finally:
-            if training:                                       # Save trained model as checkpoint
-                model_chkpt_path = os.path.join(model_summary_dir, "model.chkpt")
-                _algo.save_model(model_chkpt_path)
             env.close()
 
 
