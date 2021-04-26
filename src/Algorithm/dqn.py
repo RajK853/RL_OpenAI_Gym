@@ -9,13 +9,14 @@ from src.Network.utils import get_clipped_train_op
 class DQN(OffPolicyAlgorithm):
     VALID_POLICIES = ["GreedyEpsilonPolicy"]
 
-    def __init__(self, *, lr_kwargs, gamma_kwargs, reward_scale=1.0, layers=None, **kwargs):
+    def __init__(self, *, lr_kwargs, gamma_kwargs, reward_scale=1.0, **kwargs):
         super(DQN, self).__init__(**kwargs)
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
+        self.schedulers += (self.lr_scheduler, self.gamma_scheduler)
         self.reward_scale = reward_scale
-        self.layers = layers
-        self.q_net = QNetwork(input_shape=self.obs_shape, output_size=self.action_size, layers=layers, scope="q_network")
+        self.q_net = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self.layers, 
+            preprocessors=self.preprocessors, scope="q_network")
         self.target_q = self.q_net
         # Placeholders
         self.lr_ph = tf_v1.placeholder("float32", shape=[], name="lr_ph")
@@ -36,9 +37,6 @@ class DQN(OffPolicyAlgorithm):
     def lr(self):
         return self.lr_scheduler.value
 
-    def action(self, state, **kwargs):
-        return super().action(state, estimator=self.q_net, **kwargs)
-
     def get_q_target(self):
         next_qs = self.target_q(self.next_states_ph)
         max_next_qs = tf_v1.reduce_max(next_qs, axis=-1)
@@ -50,8 +48,10 @@ class DQN(OffPolicyAlgorithm):
         batch_size = tf_v1.shape(self.actions_ph)[0]
         indices = tf_v1.stack([tf_v1.range(batch_size), self.actions_ph], axis=-1)
         q_predictions = self.q_net(self.states_ph)
-        q_predictions = tf_v1.gather_nd(q_predictions, indices)
-        q_loss = tf_v1.reduce_mean(tf_v1.losses.mean_squared_error(labels=q_targets, predictions=q_predictions))
+        q_targets = tf_v1.tensor_scatter_nd_update(q_predictions, indices, q_targets)
+        # q_predictions = tf_v1.gather_nd(q_predictions, indices)
+        # q_loss = tf_v1.reduce_mean(tf_v1.losses.huber_loss(labels=q_targets, predictions=q_predictions))
+        q_loss = tf_v1.losses.mean_squared_error(labels=q_targets, predictions=q_predictions)
         optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr_ph)
         train_op = get_clipped_train_op(q_loss, optimizer=optimizer, var_list=self.q_net.trainable_vars,
                                         clip_norm=self.clip_norm)
@@ -59,26 +59,16 @@ class DQN(OffPolicyAlgorithm):
 
     def hook_before_train(self, **kwargs):
         self.init_q()
+        self.policy.set_model(self.q_net)
         super().hook_before_train(**kwargs)
 
     def train(self):
-        states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
-        feed_dict = {self.states_ph: states,
-                     self.actions_ph: actions,
-                     self.rewards_ph: rewards,
-                     self.next_states_ph: next_states,
-                     self.dones_ph: dones,
-                     self.lr_ph: self.lr}
-        self.q_net.update(self.sess, feed_dict)
-
-    def hook_after_step(self, **kwargs):
-        if self.training:
-            self.replay_buffer.add(self.transition)
-            self.train()
-
-    def hook_after_epoch(self, **kwargs):
-        super().hook_after_epoch(**kwargs)
-        if self.training:
-            self.add_summaries(self.epoch)
-            self.gamma_scheduler.increment()
-            self.lr_scheduler.increment()
+        for i in range(self.num_gradient_steps):
+            states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
+            feed_dict = {self.states_ph: states,
+                         self.actions_ph: actions,
+                         self.rewards_ph: rewards,
+                         self.next_states_ph: next_states,
+                         self.dones_ph: dones,
+                         self.lr_ph: self.lr}
+            self.q_net.update(self.sess, feed_dict)
