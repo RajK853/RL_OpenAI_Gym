@@ -43,38 +43,32 @@ Following model-free Deep RL algorithms are available:
 ## Training the agent
 - Create a YAML config file (let's say `sac_experiment.yaml`) 
 ```YAML
-LunarLander-v2: &base_config
-  env_name: LunarLander-v2
+CartPole-v1:
+  env_name: CartPole-v1
   epochs: 1000
-  record_interval: 10
   render: False
   training: True
+  record_interval: 10
   summary_dir: summaries/classic_control
   algo:
-    name: ddqn
+    name: sarsa
     kwargs:
-      tau: 0.005
-      update_interval: 10
-      num_gradient_steps: auto
-      num_init_exp_samples: 2500
-      max_init_exp_timestep: auto
-      batch_size_kwargs:
-        type: ConstantScheduler
-        value: 32
+      clip_norm: 5.0
+      num_gradient_steps: 2
       gamma_kwargs:
         type: ConstantScheduler
-        value: 0.99
+        value: 0.9
       lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.0003
   policy:
     name: greedy_epsilon
     kwargs:
       eps_kwargs:
-        type: ExpScheduler
+        type: ExpScheduler      # y = e^(-decay_rate*t)
         decay_rate: 0.01
         update_step: 20
-        clip_range: [0.01, 0.5]
+        clip_range: [0.001, 0.6]
 ```
 [comment]: <> (Organise attributes and their descritions in a table)
 - The valid parameters for the YAML config file are as follows:
@@ -97,7 +91,7 @@ LunarLander-v2: &base_config
 ```shell
 python train.py sac_experiment.yaml
 ```
-The above command will train the agent on the `LunarLander-v2` environments using `DDQN` algorithm with `Greedy Epsilon` policy.
+The above command will train the agent on the `CartPole-v1` environments using the `SARSA` algorithm with `Greedy Epsilon` policy.
 
 ***
 ## Testing  the agent
