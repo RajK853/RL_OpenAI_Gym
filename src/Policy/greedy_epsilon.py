@@ -8,11 +8,21 @@ class GreedyEpsilonPolicy(BasePolicy):
     def __init__(self, *, eps_kwargs, explore_ratio=0.60, explore_exploit_interval=20, **kwargs):
         super(GreedyEpsilonPolicy, self).__init__(**kwargs)
         self.eps_scheduler = get_scheduler(eps_kwargs)
+        self.schedulers += (self.eps_scheduler, )
+        self.scalar_summaries += ("eps", )
+        ######################### Experimental feature ##########################
+        """
+        Idea:
+        Instead of choosing actions greedily with some random actions based on the epsilon value, 
+        we introduce some epoch intervals periodically where the policy operates deterministically
+        by temporarily setting the epsilon value to 0. 
+        """
+        # TODO: Implement it as a scheduler in all policies
         self.explore_ratio = explore_ratio
         self.explore_exploit_interval = explore_exploit_interval
         self.explore_interval = self.explore_ratio*self.explore_exploit_interval
         self.eps_mask = 1
-        self.scalar_summaries += ("eps", )
+        #########################################################################
 
     @property
     def eps(self):
@@ -21,29 +31,19 @@ class GreedyEpsilonPolicy(BasePolicy):
         """
         return self.eps_mask*self.eps_scheduler.value
 
+    def set_model(self, model):
+        self.model = model
+
     def _action(self, sess, states, deterministic=False, **kwargs):
-        """
-        Get actions for given states from the given estimator
-        args:
-            state (Unknown) : State of the environment
-        returns:
-            list : Action for the given state
-        """
-        estimator = kwargs["estimator"]
-        if deterministic:
-            q_values = estimator.predict(states)
+        if states.shape == self.obs_shape:
+            states = np.expand_dims(states, axis=0)
+        if deterministic or np.random.random() > self.eps:
+            q_values = self.model.predict(states)
             actions = np.argmax(q_values, axis=-1)
         else:
-            actions = []
-            for state in states:
-                if np.random.random() < self.eps:
-                    action = self.action_space.sample()
-                else:
-                    q_values = estimator.predict(state)[0]
-                    action = np.argmax(q_values)
-                actions.append(action)
+            actions = [self.action_space.sample() for _ in states]
         return actions
 
     def hook_after_epoch(self, **kwargs):
-        self.eps_scheduler.increment()
+        super().hook_after_epoch(**kwargs)
         self.eps_mask = (self.eps_scheduler.steps % self.explore_exploit_interval) < self.explore_interval

@@ -24,9 +24,13 @@ def create_feedforward_network(input_tensor, layers):
                    {"type": "Dense", "units": 100, "activation": "relu"}]
     :returns: (tensor) Output tensor of the last layer
     """
-    x = input_tensor
+
+    if len(input_tensor) > 1:
+        out = tf_v1.keras.layers.Concatenate(axis=-1)(input_tensor)
+    else:
+        out = input_tensor[0]
     for layer_dict in copy.deepcopy(layers):
         layer_type = layer_dict.pop("type")
         layer_class = getattr(tf_v1.keras.layers, layer_type)
-        x = layer_class(**layer_dict)(x)
-    return x
+        out = layer_class(**layer_dict)(out)
+    return out
