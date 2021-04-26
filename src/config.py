@@ -1,7 +1,7 @@
 import copy
 
 from src.Policy import GreedyEpsilonPolicy, GaussianPolicy, DiscretePolicy, ContinuousPolicy
-from src.Algorithm import DQN, DDQN, Reinforce, ActorCritic, Sarsa, DDPG, SAC
+from src.Algorithm import DQN, DDQN, Reinforce, A2C, Sarsa, DDPG, SAC
 from src.Buffer import ReplayBuffer, PrioritizedReplayBuffer
 
 ALGO_LEARNING_RATE = 3e-4
@@ -42,10 +42,9 @@ GreedyEpsilon = {
 Gaussian = {
     "function": GaussianPolicy,
     "kwargs": {
-        "alpha": 2e-4,
         "lr_kwargs": {
             "type": "ConstantScheduler",
-            "value": 0.0003,
+            "value": 0.0001,
         },
         "mu_range": (-2.0, 2.0),
         "log_std_range": (-20.0, -0.3),
@@ -56,10 +55,8 @@ Discrete = {
     "function": DiscretePolicy,
     "kwargs": {
         "lr_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.005,
-            "update_step": 20,
-            "clip_range": (0.0001, 0.001),
+            "type": "ConstantScheduler",
+            "value": 0.0001,
         },
     }
 }
@@ -68,10 +65,8 @@ Continuous = {
     "function": ContinuousPolicy,
     "kwargs": {
         "lr_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.005,
-            "update_step": 20,
-            "clip_range": (0.0001, 0.001),
+            "type": "ConstantScheduler",
+            "value": 0.0001,
         },
     }
 }
@@ -121,7 +116,10 @@ _DQN = {
             "update_step": 20,
             "clip_range": (0.0001, 0.001),
         },
-        "batch_size": 100,
+        "batch_size_kwargs": {
+            "type": "ConstantScheduler",
+            "value":  100,
+        },
         "num_init_exp_samples": 10000,
     }
 }
@@ -131,8 +129,12 @@ _DDQN = {
     "kwargs": {
         "tau": 0.003,
         "update_interval": 1,
-        "batch_size": 100,
-        "num_init_exp_samples": 10000,
+        "num_init_exp_samples": 1000,
+        "max_init_exp_timestep": "auto",
+        "batch_size_kwargs": {
+            "type": "ConstantScheduler",
+            "value":  100,
+        },
         "gamma_kwargs": {
             "type": "ExpScheduler",
             "decay_rate": 0.005,
@@ -153,26 +155,27 @@ _DDQN = {
 _DDPG = {
     "function": DDPG,
     "kwargs": {
-        "num_init_exp_samples": 10000,
+        "num_init_exp_samples": 4000,
+        "max_init_exp_timestep": 200,
         "buffer_size": 500_000,
         "reward_scale": 1.0,
-        "batch_size": 100,
         "tau": 0.003,
-        "update_interval": 1,
-        "random_type": "uniform",
+        "update_interval": 10,
         "sigma_kwargs": {
             "type": "ConstantScheduler",
             "value": 1.0,
+        },
+        "batch_size_kwargs": {
+            "type": "ConstantScheduler",
+            "value":  100,
         },
         "gamma_kwargs": {
             "type": "ConstantScheduler",
             "value": 0.99,
         },
         "lr_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.005,
-            "update_step": 20,
-            "clip_range": (0.0001, 0.001),
+            "type": "ConnstantScheduler",
+            "value": 0.0001,
         },
     }
 }
@@ -180,36 +183,25 @@ _DDPG = {
 _Reinforce = {
     "function": Reinforce,
     "kwargs": {
+        "alpha": 0.003,
         "gamma_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.005,
-            "e_offset": 1.0,
-            "e_scale": -1.0,
-            "update_step": 50,
-            "clip_range": (0.99, 0.997),
+            "type": "ConstantScheduler",
+            "value": 0.997,
         },
-        "num_train": 2,
     }
 }
 
-_ActorCritic = {
-    "function": ActorCritic,
+_A2C = {
+    "function": A2C,
     "kwargs": {
         "lr_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.0025,
-            "update_step": 100,
-            "clip_range": (0.0008, 0.002),
+            "type": "ConstantScheduler",
+            "value": 0.0001,
         },
         "gamma_kwargs": {
-            "type": "ExpScheduler",
-            "decay_rate": 0.005,
-            "e_offset": 1.0,
-            "e_scale": -1.0,
-            "update_step": 50,
-            "clip_range": (0.99, 0.997),
+            "type": "ConstantScheduler",
+            "value": 0.997,
         },
-        "num_train": 2,
     }
 }
 _SAC = {
@@ -217,18 +209,21 @@ _SAC = {
     "kwargs": {
         "buffer_size": 500_000,
         "reward_scale": 1.0,
-        "batch_size": 256,
-        "clip_norm": 5.0,
+        "clip_norm": None,
         "num_init_exp_samples": 10000,
-        "tau": 5e-3,            # param(targets) = tau*param(source) + (1-tau)*param(targets)
-        "update_interval": 1,   # Time steps
+        "tau": 5e-3,              # param(targets) = tau*param(source) + (1-tau)*param(targets)
+        "update_interval": 1,     # Time steps
         "num_q_nets": 2,
         "auto_ent": True,
-        "target_entropy": "auto",    # auto = -0.5 * Action space size
-        "init_log_alpha": 0.0,   # auto = 2 * Target entropy
+        "target_entropy": "auto", # auto = -0.5 * Action space size
+        "init_log_alpha": 0.0,    # TODO: Maybe specify init_alpha instead
         "gamma_kwargs": {
             "type": "ConstantScheduler",
             "value": 0.99,
+        },        
+        "batch_size_kwargs": {
+            "type": "ConstantScheduler",
+            "value":  256,
         },
         "q_lr_kwargs": {
             "type": "ConstantScheduler",
@@ -246,22 +241,12 @@ ALGORITHMS = {
     "dqn": _DQN,
     "ddqn": _DDQN,
     "reinforce": _Reinforce,
-    "actor_critic": _ActorCritic,
+    "a2c": _A2C,
     "sarsa": _Sarsa,
     "ddpg": _DDPG,
     "sac": _SAC,
 }
 
-
-def get_configuration(args):
-    policy = copy.deepcopy(POLICIES[args.policy])
-    algorithm = copy.deepcopy(ALGORITHMS[args.algorithm])
-    algorithm["kwargs"].update(render=args.render)
-    config_dict = {
-        "policy_param": policy,
-        "algorithm_param": algorithm,
-    }
-    return config_dict
 
 
 def _get_config(src_dict, key, deep=True):
