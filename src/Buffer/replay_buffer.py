@@ -27,10 +27,10 @@ class ReplayBuffer:
             shape = (self._maxsize, )
             if isinstance(obj, np.ndarray):
                 shape += obj.shape
-                kind = obj.dtype
+                dtype = obj.dtype
             else:
-                kind = type(obj)
-            buffer.append(np.zeros(shape, dtype=kind))
+                dtype = type(obj)
+            buffer.append(np.zeros(shape, dtype=dtype))
         self._buffer = buffer
         self._size = 0
         self._pointer = 0
@@ -47,27 +47,6 @@ class ReplayBuffer:
         self._pointer = (self._pointer + 1) % self._maxsize
         self._size = min(self._size + 1, self._maxsize)
 
-    def _encode_samples(self, idxes):
-        return tuple(buffer[idxes] for buffer in self._buffer)
-
-    def _encode_sample(self, idxes):
-        """
-        Sample data from given indexes
-        args:
-            idxes (list/np.array) : List with indexes of data to sample
-        returns:
-            np.array, np.array, np.array, np.array, np.array : Sampled states, actions, rewards, next_states and dones
-        """
-        states, actions, rewards, next_states, dones = [], [], [], [], []
-        for i in idxes:
-            obs_t, action, reward, obs_tp1, done = self._buffer[i]
-            states.append(obs_t)
-            actions.append(action)
-            rewards.append(reward)
-            next_states.append(obs_tp1)
-            dones.append(done)
-        return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(dones)
-
     def sample(self, batch_size):
         """
         Sample data from the replay buffer
@@ -76,14 +55,21 @@ class ReplayBuffer:
         returns:
             tuple of 5 lists : Sampled batch of transitions 
         """
+        # batch_size = min(batch_size, len(self))
         idxes = np.random.randint(0, len(self), size=batch_size)
-        return self._encode_samples(idxes)
+        return tuple(buffer[idxes] for buffer in self._buffer)
+
+    def sample_all(self):
+        idxes = np.arange(self._size)
+        return tuple(buffer[idxes] for buffer in self._buffer)        
 
     def clear(self):
         """
         Clear the contents of replay buffer
         """
         self._buffer.clear()
+        self._size = 0
+        self._pointer = 0
 
 
 class PrioritizedReplayBuffer(ReplayBuffer):
