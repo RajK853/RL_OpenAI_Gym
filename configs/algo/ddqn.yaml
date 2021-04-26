@@ -1,76 +1,72 @@
-Exp1: &base_config
+CartPole-v1: &base_config
   env_name: CartPole-v1
   epochs: 1000
   record_interval: 10
   render: False
   training: True
-  load_model: null
-  summary_dir: summaries1
+  summary_dir: summaries/classic_control
   algo:
     name: ddqn
     kwargs: &algo_configs
-      batch_size: 256
-      clip_norm: 2.0
-      tau: 0.01
-      update_interval: 1
+      tau: 0.005
+      update_interval: 10
+      num_gradient_steps: 100
       num_init_exp_samples: 2500
+      max_init_exp_timestep: auto
+      batch_size_kwargs:
+        type: ConstantScheduler
+        value: 32
       gamma_kwargs:
-        type: ExpScheduler
-        decay_rate: 0.005
-        update_step: 50
-        e_offset: 1.0
-        e_scale: -1.0
-        clip_range: [0.99, 0.997]
+        type: ConstantScheduler
+        value: 0.99
       lr_kwargs:
-        type: ExpScheduler
-        decay_rate: 0.01
-        update_step: 20
-        clip_range: [0.0001, 0.001]
+        type: ConstantScheduler
+        value: 0.0001
   policy:
     name: greedy_epsilon
     kwargs: &policy_configs
-      explore_ratio: 0.60
-      explore_exploit_interval: 20
       eps_kwargs:
         type: ExpScheduler
         decay_rate: 0.01
-        clip_range: [0.01, 0.75]
+        update_step: 20
+        clip_range: [0.001, 0.5]
 
-Exp2:
+MountainCar-v0:
   <<: *base_config
   env_name: MountainCar-v0
   algo:
     name: ddqn
     kwargs:
       <<: *algo_configs
-      tau: 0.005
-      update_interval: 1
+      num_gradient_steps: 100
       num_init_exp_samples: 1000
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.997
   policy:
     name: greedy_epsilon
-    kwargs:
-      <<: *policy_configs
-      explore_ratio: 0.60
-      explore_exploit_interval: 20
-      eps_kwargs:
-        decay: 0.001
-        update_step: 20
-        clip_range: [0.01, 0.75]
+    kwargs: *policy_configs
 
-Exp3:
+LunarLander-v2:
   <<: *base_config
   env_name: LunarLander-v2
+  summary_dir: summaries/box2d
   algo:
     name: ddqn
     kwargs:
       <<: *algo_configs
+      num_gradient_steps: 500
       num_init_exp_samples: 5000
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.997
 
-Exp4:
+Acrobot-v1:
   <<: *base_config
   env_name: Acrobot-v1
   algo:
     name: ddqn
     kwargs:
       <<: *algo_configs
+      num_gradient_steps: 100
       num_init_exp_samples: 2500

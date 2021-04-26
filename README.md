@@ -1,7 +1,7 @@
 
 # Reinforcement Learning - OpenAI gym
 This repository contains the solutions for the OpenAI gym environments using different Deep Reinforcement Learning algorithms.  
-*Objective:* For the default OpenAI Gym environments, their goals are to achieve a certain average threshold reward value for a consecutive number of trials (eposides) as available [here](https://github.com/openai/gym/wiki/Table-of-environments). For the environments other than that provided by the OpenAI Gym, their goal reward is set to `0` and number of trials to `1` by default. 
+**Objective:** For the default OpenAI Gym environments, their goals are to achieve a certain average threshold reward value for a consecutive number of trials (eposides) as available [here](https://github.com/openai/gym/wiki/Table-of-environments). For the environments other than that provided by the OpenAI Gym, their goal reward is set to `0` and number of trials to `1` by default. 
 
 |    |    |  
 | ------------- | ------------- |  
@@ -43,46 +43,40 @@ Following model-free Deep RL algorithms are available:
 ## Training the agent
 - Create a YAML config file (let's say `sac_experiment.yaml`) 
 ```YAML
-SAC_BipedalWalker:
-  env_name: BipedalWalker-v3
+LunarLander-v2: &base_config
+  env_name: LunarLander-v2
   epochs: 1000
   record_interval: 10
   render: False
   training: True
-  load_model: null
-  summary_dir: summaries/box2d
+  summary_dir: summaries/classic_control
   algo:
-    name: sac
+    name: ddqn
     kwargs:
       tau: 0.005
       update_interval: 10
-      buffer_size: 1000000
-      num_gradient_steps: 1000
-      num_init_exp_samples: 5000
+      num_gradient_steps: auto
+      num_init_exp_samples: 2500
       max_init_exp_timestep: auto
-      auto_ent: True
-      target_entropy: auto
       batch_size_kwargs:
         type: ConstantScheduler
-        value: 64
+        value: 32
       gamma_kwargs:
         type: ConstantScheduler
-        value: 0.997
-      q_lr_kwargs:
-        type: ConstantScheduler
-        value: 0.0001
-      alpha_lr_kwargs:
-        type: ConstantScheduler
-        value: 0.0001
-  policy:
-    name: gaussian
-    kwargs:
-      mu_range: [-2.0, 2.0]
-      log_std_range: [-20, 0.3]
+        value: 0.99
       lr_kwargs:
         type: ConstantScheduler
         value: 0.0001
+  policy:
+    name: greedy_epsilon
+    kwargs:
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        update_step: 20
+        clip_range: [0.01, 0.5]
 ```
+[comment]: <> (Organise attributes and their descritions in a table)
 - The valid parameters for the YAML config file are as follows:
     * `env_name`: (str) Name of the [OpenAI gym](https://github.com/openai/gym/wiki/Table-of-environments) / [PyBullet](https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#) environment
     * `epochs`:  (int) Number of training/testing epochs. Defaults to **1000**. 
@@ -99,16 +93,16 @@ SAC_BipedalWalker:
       * `kwargs`: (dict) Arguments of the given policy as key-value pairs. Supported arguments for each policy can be found [here](src/config.py).
     * `load_model`: (str) Path to the directory where a pretrained model is saved as a checkpoint. The weights of this model is restored to the current model.
       > Since only the weights are restored from the pretrained model, it is important that the source and target neural networks have the same architecture.
-- Enter the following command (use --help to see all arguments):  
+- Enter the following command:  
 ```shell
 python train.py sac_experiment.yaml
 ```
-The above command will train the agent on the `BipedalWalker-v3` environments using `SAC` algorithm.
+The above command will train the agent on the `LunarLander-v2` environments using `DDQN` algorithm with `Greedy Epsilon` policy.
 
 ***
 ## Testing  the agent
 - Create a YAML config similar to the one above (let's say `sac_experiment.yaml`) where `training` is set to `False` and 
-  `load_model` is the directory path where the trained model's checkpoint is located (something like `summaries/box2d/BipedalWalkerHardcore-v3-sac-gaussian-DD.MM.YYYY_mm.ss/model`).
+  `load_model` is the directory path where the trained model's checkpoint is located (something like `summaries/box2d/LunarLander-v2-ddqn-greedy_epsilon-DD.MM.YYYY_mm.ss/model`).
 - Enter the following command:
 ```shell
 python train.py sac_experiment.yaml

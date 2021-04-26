@@ -1,0 +1,82 @@
+CartPole-v1: &base_config
+  env_name: CartPole-v1
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  summary_dir: summaries/classic_control
+  algo:
+    name: sarsa
+    kwargs: &algo_configs
+      clip_norm: 5.0
+      num_gradient_steps: 2
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.9
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0003
+  policy:
+    name: greedy_epsilon
+    kwargs: &policy_configs
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        update_step: 20
+        clip_range: [0.001, 0.6]
+
+default_MountainCar-v0:
+  <<: *base_config
+  env_name: MountainCar-v0
+  algo:
+    name: sarsa
+    kwargs:
+      <<: *algo_configs
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.99
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0003
+  policy:
+    name: greedy_epsilon
+    kwargs:
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.005
+        update_step: 20
+        clip_range: [0.001, 0.5]
+
+default_LunarLander-v2:
+  <<: *base_config
+  env_name: LunarLander-v2
+  summary_dir: summaries/box2d
+  algo:
+    name: sarsa
+    kwargs:
+      <<: *algo_configs
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.997
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0002
+  policy:
+    name: greedy_epsilon
+    kwargs:
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.01
+        update_step: 20
+        clip_range: [0.001, 0.75]
+
+default_Acrobot-v1:
+  <<: *base_config
+  env_name: Acrobot-v1
+  algo:
+    name: sarsa
+    kwargs: 
+      <<: *algo_configs
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.99

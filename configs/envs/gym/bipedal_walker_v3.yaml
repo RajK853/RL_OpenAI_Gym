@@ -1,0 +1,79 @@
+default_DDPG: &base_DDPG
+  env_name: BipedalWalker-v3
+  epochs: 2000
+  record_interval: 10
+  render: False
+  training: True
+  summary_dir: BipedalWalkerV3
+  algo:
+    name: ddpg
+    kwargs: &ddpg_config
+      buffer_size: 5000000
+      num_gradient_steps: 1000
+      num_init_exp_samples: 4000
+      max_init_exp_timestep: 200
+      tau: 0.003
+      update_interval: 10
+      batch_size_kwargs:
+        type": ExpScheduler
+        update_step: 50
+        decay_rate: 0.001
+        e_offset: 1.0
+        e_scale: -1.0
+        clip_range: [32, 256]
+      sigma_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.007
+        clip_range: [0.01, 0.2]
+      gamma_kwargs:        
+        type: ConstantScheduler
+        value: 0.997
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+  policy:
+    name: continuous
+    kwargs:
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+
+SAC: &base_SAC
+  <<: *base_config
+  algo:
+    name: sac
+    kwargs: &sac_config
+      buffer_size: 2000000
+      num_gradient_steps: 1000
+      num_init_exp_samples: 5000
+      max_init_exp_timestep: 500
+      tau: 0.003
+      update_interval: 10
+      num_q_nets: 2
+      auto_ent: True
+      target_entropy: auto
+      init_log_alpha: 0.0
+      batch_size_kwargs:
+        type": ExpScheduler
+        update_step: 50
+        decay_rate: 0.001
+        e_offset: 1.0
+        e_scale: -1.0
+        clip_range: [32, 256]
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.997
+      q_lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+      alpha_lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+  policy:
+    name: gaussian
+    kwargs:
+      mu_range: [-2.0, 2.0]
+      log_std_range: [-20.0, 0.3]
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001

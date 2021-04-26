@@ -1,0 +1,45 @@
+Roundabout:
+  env_name: roundabout-v0
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  summary_dir: highway
+  include: [highway_env]
+  algo:
+    name: ddqn
+    kwargs:
+      batch_size: 32
+      tau: 0.005
+      update_interval: 1
+      max_episode_steps: 11
+      num_gradient_steps: auto
+      num_init_exp_samples: 400
+      max_init_exp_timestep: auto
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.99
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.001
+      preprocessors:
+        - - { type: Conv1D, filters: 32, kernel_size: 3, activation: relu, kernel_regularizer: l2}
+          - { type: Conv1D, filters: 32, kernel_size: 1, activation: relu, kernel_regularizer: l2}
+          - { type: Flatten}
+      layers:
+        - {type: Dense, units: 100, kernel_regularizer: l2}
+        - {type: LayerNormalization}
+        - {type: Activation, activation: relu}
+        - {type: Dense, units: 100, kernel_regularizer: l2}
+        - {type: LayerNormalization}
+        - {type: Activation, activation: relu}
+        - {type: Dense, units: 1}
+  policy:
+    name: greedy_epsilon
+    kwargs:
+      explore_ratio: 0.60
+      explore_exploit_interval: 20
+      eps_kwargs:
+        type: ExpScheduler
+        decay_rate: 0.005
+        clip_range: [0.01, 0.3]

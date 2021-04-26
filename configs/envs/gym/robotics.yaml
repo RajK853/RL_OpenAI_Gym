@@ -1,0 +1,43 @@
+SAC: &base_config
+  env_name: FetchReach-v1 # HandManipulateBlock-v0
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  summary_dir: robotics
+  algo: 
+    name: sac
+    kwargs: &algo_configs
+      max_episode_steps: auto
+      num_gradient_steps: auto
+      num_init_exp_samples: 5000
+      max_init_exp_timestep: auto
+      tau: 0.01
+      update_interval: 5
+      num_q_nets: 2
+      auto_ent: True
+      target_entropy: auto
+      init_log_alpha: 0
+      rr_prob: 0.5
+      rr_offset: 0.8
+      rr_factor: 0.2
+      batch_size_kwargs:
+        type: ConstantScheduler
+        value:  64
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.99
+      q_lr_kwargs:
+        type: ConstantScheduler
+        value: 0.001
+      alpha_lr_kwargs:
+        type: ConstantScheduler
+        value: 0.001
+  policy:
+    name: gaussian
+    kwargs: &policy_configs
+      mu_range: [-2.0, 2.0]
+      log_std_range: [-20.0, 0.3]
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.001

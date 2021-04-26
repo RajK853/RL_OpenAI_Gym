@@ -1,0 +1,58 @@
+HalfCheetah: &base_config
+  env_name: HalfCheetah-v2
+  epochs: 1000
+  record_interval: 10
+  render: False
+  training: True
+  summary_dir: summaries/mujoco
+  algo:
+    name: ddpg
+    kwargs: &algo_configs
+      tau: 0.005
+      update_interval: 10
+      num_gradient_steps: auto
+      num_init_exp_samples: 2000
+      max_init_exp_timestep: auto
+      batch_size_kwargs:
+        type: ConstantScheduler
+        value:  100
+      sigma_kwargs:
+        type: ConstantScheduler
+        value: 0.1
+      gamma_kwargs:
+        type: ConstantScheduler
+        value: 0.9
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+  policy:
+    name: continuous
+    kwargs: &policy_configs
+      lr_kwargs:
+        type: ConstantScheduler
+        value: 0.0001
+
+
+Hopper:
+  <<: *base_config
+  env_name: Hopper-v2
+  algo:
+    name: ddpg
+    kwargs: 
+      <<: *algo_configs
+      tau: 0.01
+      num_init_exp_samples: 10000
+
+Walker:
+  <<: *base_config
+  env_name: Walker2d-v2
+  algo:
+    name: ddpg
+    kwargs: 
+      <<: *algo_configs
+      tau: 0.01
+      num_init_exp_samples: 10000
+
+Swimmer:
+  <<: *base_config
+  env_name: Swimmer-v2
