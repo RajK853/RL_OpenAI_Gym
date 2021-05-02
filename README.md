@@ -41,13 +41,12 @@ Following model-free Deep RL algorithms are available:
 
 ## Usage:
 ## Training the agent
-- Create a YAML config file (let's say `sac_experiment.yaml`) 
+- Create a YAML config file (let's say `sarsa_cartpole.yaml`) 
 ```YAML
 CartPole-v1:
   env_name: CartPole-v1
   epochs: 1000
   render: False
-  training: True
   record_interval: 10
   summary_dir: summaries/classic_control
   algo:
@@ -65,7 +64,7 @@ CartPole-v1:
     name: greedy_epsilon
     kwargs:
       eps_kwargs:
-        type: ExpScheduler      # y = e^(-decay_rate*t)
+        type: ExpScheduler      # y = exp(-decay_rate*t) where t = epoch
         decay_rate: 0.01
         update_step: 20
         clip_range: [0.001, 0.6]
@@ -73,43 +72,40 @@ CartPole-v1:
 [comment]: <> (Organise attributes and their descritions in a table)
 - The valid parameters for the YAML config file are as follows:
     * `env_name`: (str) Name of the [OpenAI gym](https://github.com/openai/gym/wiki/Table-of-environments) / [PyBullet](https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#) environment
-    * `epochs`:  (int) Number of training/testing epochs. Defaults to **1000**. 
-      > The number of time-steps per epoch depends on the environment. 
-    * `render`: (bool) Option to render each epoch on the display. Defaults to **False**.
-      > PyBullet environments cannot be rendered. Therefore, please look at their recorded videos for the rendered simualtions.
+    * `epochs`:  (int) Number of training epochs. Defaults to **1000**.
+    * `render`: (bool) When set to **True**, renders each epoch on the display. Defaults to **False**.
     * `record_interval` : (int) Interval (in terms of epoch) to record and save the given epoch as mp4 video. Defaults to **10**. 
-      > For OpenAI Gym envrionments, recording videos also renders the recorded epoch on the display.
+      > For some envrionments, recording videos also renders the recorded epochs.
+    * `load_model`: (str) To resume a training, assign a path to the directory with a pretrained model saved as a checkpoint. Defaults to **None**.
     * `algo`:
       * `name`: (str) Name of one of the supported algorithms from [here](/src/Algorithm) in *snake_case* naming convention.
       * `kwargs` : (dict) Arguments of the given algorithm as key-value pairs. Supported arguments for each algorithm can be found [here](src/config.py).  
     * `policy`:
       * `name`: (str) Name of one of the supported policies from [here](/src/Policy) in *snake_case* naming convention.
       * `kwargs`: (dict) Arguments of the given policy as key-value pairs. Supported arguments for each policy can be found [here](src/config.py).
-    * `load_model`: (str) Path to the directory where a pretrained model is saved as a checkpoint. The weights of this model is restored to the current model.
-      > Since only the weights are restored from the pretrained model, it is important that the source and target neural networks have the same architecture.
 - Enter the following command:  
 ```shell
-python train.py sac_experiment.yaml
+python train.py sarsa_cartpole.yaml
 ```
 The above command will train the agent on the `CartPole-v1` environments using the `SARSA` algorithm with `Greedy Epsilon` policy.
-
-***
-## Testing  the agent
-- Create a YAML config similar to the one above (let's say `sac_experiment.yaml`) where `training` is set to `False` and 
-  `load_model` is the directory path where the trained model's checkpoint is located (something like `summaries/box2d/LunarLander-v2-ddqn-greedy_epsilon-DD.MM.YYYY_mm.ss/model`).
-- Enter the following command:
-```shell
-python train.py sac_experiment.yaml
-```
 
 ***
 ## Summary information
 - Track the summary in real-time with tensorboard using the command.  
 ```shell
-tensorboard --host localhost --logdir summaries
+tensorboard --host localhost --logdir ${summary_dir}
 ```
 The respective summary directory contains following files and directories:
-- **model**: tensorboard summary and trained models (as checkpoints).
+- **model**: tensorboard summary and the best trained model (as checkpoints).
 - **videos**: recorded videos if `--record_interval` argument was passed while training or testing the model
+- **policy.tf**: best trained policy model
 - **goal_info.yaml**: YAML file with given goal information: number of goals achieved, epoch and reward values for the first goal and max reward.
 - **config.yaml**: YAML file with parameters used to train the given model.
+
+***
+## Testing the agent
+To test the agent previously trained on the `CartPole-v1` using the `SARSA` algorithm, enter the following command:
+```shell
+python test.py --env_name CartPole-v1 --load_model ${path/to/policy.tf} --epochs 10
+```
+Here the `${path/to/policy.tf}` is the path to the `policy.tf` model located in the summary directory of the previous experiment.
