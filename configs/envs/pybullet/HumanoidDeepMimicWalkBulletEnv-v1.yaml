@@ -9,23 +9,24 @@ HumanoidDeepMimicWalkBulletEnv: &base_config
   algo: 
     name: sac
     kwargs: &algo_configs
+      target_entropy: -15.0
       num_gradient_steps: 1000
-      num_init_exp_samples: 5000
+      num_init_exp_samples: 10000
       max_init_exp_timestep: auto
-      tau: 0.005
+      tau: 0.01
       update_interval: 10
       batch_size_kwargs:
         type: ConstantScheduler
-        value: 64
+        value: 32
       gamma_kwargs:
         type: ConstantScheduler
-        value: 0.9
+        value: 0.997
       q_lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.0003
       alpha_lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.0003
       layers:
         - {type: Dense, units: 256, kernel_regularizer: l2}
         - {type: LayerNormalization}
@@ -44,7 +45,7 @@ HumanoidDeepMimicWalkBulletEnv: &base_config
       log_std_range: [-20.0, 0.3]
       lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.0003
       layers:
         - {type: Dense, units: 256, kernel_regularizer: l2}
         - {type: LayerNormalization}

@@ -3,7 +3,6 @@ default_DDPG: &base_config
   epochs: 3000
   record_interval: 10
   render: False
-  training: True
   summary_dir: BipedalWalkerHardcoreV3
   algo:
     name: ddpg

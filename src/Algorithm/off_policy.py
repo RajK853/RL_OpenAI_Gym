@@ -38,7 +38,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
                 next_state, reward, done, info = env.step(action)
                 self.transition = [state, action, reward, next_state, int(done)]
                 # env.render()
-                self.replay_buffer.add(self.transition)
+                self.replay_buffer.add(self.transition)    # TODO: Any problem in using hook_after_step?
                 epoch_steps += 1
                 pbar.step()
                 if ((steps + epoch_steps) >= total_steps) or (epoch_steps >= self.max_init_exp_timestep):
@@ -52,7 +52,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
 
     def hook_before_train(self, **kwargs):
         super(OffPolicyAlgorithm, self).hook_before_train(**kwargs)
-        if self.training and self.num_init_exp_samples is not None:
+        if self.num_init_exp_samples is not None:
             # Explore in the original environment which does not record video during rollout
             self.init_explore(env=self.env.env, total_steps=self.num_init_exp_samples)
 

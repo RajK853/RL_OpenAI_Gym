@@ -82,7 +82,6 @@ class Reinforce(OnPolicyAlgorithm):
 
     def hook_after_step(self, **kwargs):
         super().hook_after_step(**kwargs)
-        if self.training:
-            state, action, reward, *_ = self.transition
-            self.add_transition(state=state, action=action, reward=reward)
+        state, action, reward, *_ = self.transition
+        self.add_transition(state=state, action=action, reward=reward)
     

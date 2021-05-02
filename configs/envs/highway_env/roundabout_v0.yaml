@@ -3,7 +3,6 @@ Roundabout:
   epochs: 1000
   record_interval: 10
   render: False
-  training: True
   summary_dir: highway
   include: [highway_env]
   algo:

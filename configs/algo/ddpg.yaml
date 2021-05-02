@@ -3,7 +3,6 @@ HalfCheetah: &base_config
   epochs: 1000
   record_interval: 10
   render: False
-  training: True
   summary_dir: summaries/mujoco
   algo:
     name: ddpg

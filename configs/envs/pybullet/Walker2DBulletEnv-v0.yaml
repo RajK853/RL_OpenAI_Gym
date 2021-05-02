@@ -9,10 +9,11 @@ Walker2DBulletEnv-v0: &base_config
   algo: 
     name: sac
     kwargs: &algo_configs
-      num_gradient_steps: 500
-      num_init_exp_samples: 2000
+      reward_scale: 0.1
+      num_gradient_steps: 1000
+      num_init_exp_samples: 3000
       max_init_exp_timestep: auto
-      tau: 0.0005
+      tau: 0.005
       update_interval: 1
       batch_size_kwargs:
         type: ConstantScheduler

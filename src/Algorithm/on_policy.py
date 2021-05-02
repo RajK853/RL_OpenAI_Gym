@@ -24,5 +24,4 @@ class OnPolicyAlgorithm(BaseAlgorithm):
 
     def hook_after_epoch(self, **kwargs):
         super().hook_after_epoch(**kwargs)
-        if self.training:
-            self.trajectory.clear()
+        self.trajectory.clear()

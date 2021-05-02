@@ -9,11 +9,12 @@ AntBulletEnv-v0: &base_config
   algo: 
     name: sac
     kwargs: &algo_configs
+      reward_scale: 0.5
       num_gradient_steps: 1000
-      num_init_exp_samples: 2000
+      num_init_exp_samples: 3000
       max_init_exp_timestep: auto
-      tau: 0.01
-      update_interval: 15
+      tau: 0.005
+      update_interval: 10
       batch_size_kwargs:
         type: ConstantScheduler
         value: 64
@@ -22,10 +23,10 @@ AntBulletEnv-v0: &base_config
         value: 0.99
       q_lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.001
       alpha_lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.001
   policy:
     name: gaussian
     kwargs: &policy_configs
@@ -33,4 +34,4 @@ AntBulletEnv-v0: &base_config
       log_std_range: [-20.0, 0.3]
       lr_kwargs:
         type: ConstantScheduler
-        value: 0.0001
+        value: 0.001

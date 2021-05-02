@@ -3,7 +3,6 @@ CartPole-v1: &base_config
   epochs: 1000
   record_interval: 10
   render: False
-  training: True
   summary_dir: summaries/classic_control
   algo:
     name: ddqn

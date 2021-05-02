@@ -3,7 +3,6 @@ Discrete: &base_config
   epochs: 1000
   record_interval: 10
   render: False
-  training: True
   load_model: null
   summary_dir: summaries/box2d
   algo:

@@ -3,7 +3,6 @@ Exp1:
   epochs: 4
   record_interval: 2
   render: True
-  training: True
   load_model: null
   summary_dir: summaries
   algo:

@@ -19,7 +19,7 @@ class BaseAlgorithm:
     VALID_POLICIES = {}
 
     def __init__(self, *, sess, env, policy, render, goal_trials, goal_reward, load_model=None, summary_dir=None, 
-        training=True, layers=None, preprocessors=None, clip_norm=None, seed=None, num_gradient_steps="auto", 
+        layers=None, preprocessors=None, clip_norm=None, seed=None, num_gradient_steps="auto", 
         max_episode_steps="auto", name="algo"):
         if seed is not None:
             np.random.seed(seed)
@@ -45,7 +45,6 @@ class BaseAlgorithm:
         self.summary_dir = summary_dir
         self.summary_writer = None
         self._saver = None
-        self.training = training
         # Goal variables
         self.goal_trials = goal_trials
         self.goal_reward = goal_reward
@@ -143,14 +142,6 @@ class BaseAlgorithm:
     def _run_once(self):
         """
         Runs the simulation for one epoch
-        args:
-            epoch (int) : Epoch index
-            target_update_steps (int) : Global step interval to update weights of target estimator
-            explore_ratio (float) : Fraction of explore_exploit_interval used to explore
-            explore_exploit_interval (int) : Epoch interval to explore and exploit
-            training (bool) : Training or testing the model
-        returns:
-            (float, float, float) : Mean loss, total reward and maximum position of the current epoch
         """
         self.hook_before_epoch()
         done = 0
@@ -168,8 +159,7 @@ class BaseAlgorithm:
             total_epochs (int) : Total number of epochs
         """
         self.hook_before_train(epochs=total_epochs)
-        progressbar = ProgressBar(total_epochs, title=f"# {'Training' if self.training else 'Testing'} agent:",
-                                  info_text="Epoch: ({epoch}/%s)" % total_epochs)
+        progressbar = ProgressBar(total_epochs, title="# Training agent:", info_text="Epoch: ({epoch}/%s)" % total_epochs)
         print()
         for self.epoch in range(1, total_epochs + 1):
             self._run_once()
@@ -245,12 +235,9 @@ class BaseAlgorithm:
 
     def hook_before_train(self, **kwargs):
         self.policy.hook_before_train(**kwargs)
-        if self.training:
-            self.init_summaries()
-            print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
-            self.sess.run(tf_v1.global_variables_initializer())
-        else:
-            assert self.load_model is not None, "No model given to test!"
+        self.init_summaries()
+        print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
+        self.sess.run(tf_v1.global_variables_initializer())
         if self.load_model is not None:
             self.restore_model(os_path.join(self.load_model, "model.chkpt"))          # Restore model variables
         if self.summary_dir is not None:
@@ -272,24 +259,21 @@ class BaseAlgorithm:
 
     def hook_at_epoch_end(self, **kwargs):
         self.epoch_rewards.append(self.epoch_reward)
-        if self.training:
-            if self.best_epoch_reward is None or (self.epoch_reward >= self.best_epoch_reward):
-                self.best_epoch_reward = self.epoch_reward
-                chkpt_path = os_path.join(self.summary_dir, "model.chkpt")
-                self.save_model(chkpt_path, verbose=False)
-                dump_path = os_path.join(os_path.dirname(self.summary_dir), "policy.tf")
-                self.policy.save(dump_path, verbose=False)
+        if self.best_epoch_reward is None or (self.epoch_reward >= self.best_epoch_reward):
+            self.best_epoch_reward = self.epoch_reward
+            chkpt_path = os_path.join(self.summary_dir, "model.chkpt")
+            self.save_model(chkpt_path, verbose=False)
+            dump_path = os_path.join(os_path.dirname(self.summary_dir), "policy.tf")
+            self.policy.save(dump_path, verbose=False)
 
     def hook_after_epoch(self, **kwargs):
         self.policy.hook_after_epoch(**kwargs)
-        if self.training:
-            self.train()
-            self.increment_schedulers()
-            if len(self.epoch_rewards) >= self.goal_trials:
-                self.update_reward_info()
-            self.add_summaries(self.epoch)
+        self.train()
+        self.increment_schedulers()
+        if len(self.epoch_rewards) >= self.goal_trials:
+            self.update_reward_info()
+        self.add_summaries(self.epoch)
 
     def hook_after_train(self, **kwargs):
         self.policy.hook_after_train(**kwargs)
-        if self.training:
-            self.dump_goal_summary()
+        self.dump_goal_summary()

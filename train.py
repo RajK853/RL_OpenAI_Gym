@@ -12,7 +12,7 @@ from src.utils import exec_from_yaml, get_goal_info, dump_yaml
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(), allow_soft_placement=True)
+TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memory_fraction=0.7), allow_soft_placement=True)
 
 ENV_INFO_FILE = r"assets/env_info.csv"
 
@@ -26,7 +26,7 @@ def get_env(env_name, *, dump_dir, seed=None, record_interval=0, include=None, p
     def record_video(epoch):
         return ((epoch + 1) % record_interval) == 0
     # Import any required gym environment module
-    if include is not None:
+    if include:
         import importlib
         print(f"# Importing: {include}")
         for module in include:
@@ -45,7 +45,7 @@ def get_env(env_name, *, dump_dir, seed=None, record_interval=0, include=None, p
     return env
 
 
-def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed=None, load_model=None, render=False,
+def main(env_name, algo, policy, epochs, record_interval=10, seed=None, load_model=None, render=False,
          summary_dir="summaries", include=None):
     seed = random.randint(0, 100) if seed is None else seed
     date_time = datetime.now().strftime("%d.%m.%Y_%H.%M")
@@ -54,26 +54,22 @@ def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed
     os.makedirs(exp_summary_dir, exist_ok=True)
     video_dump_dir = os.path.join(exp_summary_dir, "videos")
     env = get_env(env_name, seed=seed, record_interval=record_interval, dump_dir=video_dump_dir, include=include)
-    model_summary_dir = os.path.join(exp_summary_dir, "model") if training else None
+    model_summary_dir = os.path.join(exp_summary_dir, "model")
     tf_v1.reset_default_graph()
     with tf_v1.Session(config=TF_CONFIG) as sess:
         try:
             algo_func, algo_kwargs = get_algo(algo)
             policy_func, policy_kwargs = get_policy(policy)
-
-            if training:
-                print("\n# Training:")
-                print("  Training information are available via Tensorboard with the given command:")
-                print(f"  tensorboard --host localhost --logdir {summary_dir}")
-                config_dict = {"epochs": epochs, 
-                               "seed": seed, 
-                               "load_model": load_model, 
-                               "algo": {"name": algo["name"], 
-                                        "kwargs": algo_kwargs},
-                               "policy": {"name": policy["name"], "kwargs": policy_kwargs}}
-                dump_yaml(config_dict, file_path=os.path.join(exp_summary_dir, "config.yaml"))
-            else:
-                print(f"\n# Testing: {load_model}")
+            print("\n# Training:")
+            print("  Training information are available via Tensorboard with the given command:")
+            print(f"  tensorboard --host localhost --logdir {summary_dir}")
+            config_dict = {"epochs": epochs, 
+                           "seed": seed, 
+                           "load_model": load_model, 
+                           "algo": {"name": algo["name"], 
+                                    "kwargs": algo_kwargs},
+                           "policy": {"name": policy["name"], "kwargs": policy_kwargs}}
+            dump_yaml(config_dict, file_path=os.path.join(exp_summary_dir, "config.yaml"))
 
             policy_kwargs.update({"env": env})
             _policy = policy_func(**policy_kwargs)
@@ -82,7 +78,6 @@ def main(env_name, algo, policy, epochs, training=True, record_interval=10, seed
                                 "sess": sess,
                                 "env": env,
                                 "summary_dir": model_summary_dir,
-                                "training": training,
                                 "load_model": load_model,
                                 "goal_trials": goal_trials,
                                 "goal_reward": goal_reward,

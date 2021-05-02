@@ -1,4 +1,3 @@
-import tensorflow as tf
 import tensorflow.compat.v1 as tf_v1
 
 from src.utils import get_scheduler
@@ -65,7 +64,7 @@ class ContinuousPolicy(BasePolicy):
 
     @property
     def loss(self):
-        return tf.reduce_mean(self._loss)
+        return tf_v1.reduce_mean(self._loss)
 
     def _action(self, sess, states, **kwargs):
         actions = sess.run(self.output, feed_dict={self.input: states})

@@ -82,6 +82,5 @@ class Sarsa(OnPolicyAlgorithm):
 
     def hook_after_step(self, **kwargs):
         super().hook_after_step(**kwargs)
-        if self.training:
-            state, action, reward, next_state, done = self.transition
-            self.add_transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
+        state, action, reward, next_state, done = self.transition
+        self.add_transition(state=state, action=action, reward=reward, next_state=next_state, done=done)
