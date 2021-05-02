@@ -77,6 +77,7 @@ CartPole-v1:
     * `record_interval` : (int) Interval (in terms of epoch) to record and save the given epoch as mp4 video. Defaults to **10**. 
       > For some envrionments, recording videos also renders the recorded epochs.
     * `load_model`: (str) To resume a training, assign a path to the directory with a pretrained model saved as a checkpoint. Defaults to **None**.
+    * `include`: (list[str]) List of additional Gym environment modules  required to be imported to load an environment. For instance, for the PyBullet environments, `include` = `[pybullet_envs]` will import `pybullet_envs` before loading the environment. Defaults to `None`. 
     * `algo`:
       * `name`: (str) Name of one of the supported algorithms from [here](/src/Algorithm) in *snake_case* naming convention.
       * `kwargs` : (dict) Arguments of the given algorithm as key-value pairs. Supported arguments for each algorithm can be found [here](src/config.py).  
