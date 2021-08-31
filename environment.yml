@@ -20,3 +20,4 @@ dependencies:
       - highway-env
       - Box2D
       - pyyaml
+      - streamlit
