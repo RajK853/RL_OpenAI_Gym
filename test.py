@@ -13,6 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--env_name", type=str, help="Environment name", required=True)
     parser.add_argument("--load_model", type=str, help=".tf model path", required=True)
+    parser.add_argument("--dump_path", type=str, help="Path to dump recorded videos", default=None)
     parser.add_argument("--epochs", type=int, help="Number of test epochs", default=10)
     parser.add_argument("--include", help="Additional modules to import", nargs="*")
     args = parser.parse_args()
@@ -56,13 +57,15 @@ def rollout(env, policy, epochs=1):
             state = next_state
 
 
-def main(env_name, load_model, epochs=5, include=None):
-    date_time = datetime.now().strftime("%d.%m.%Y_%H.%M")
-    dump_dir = os.path.join("test_videos", f"{env_name}-{date_time}")
-    env = get_env(env_name, record_interval=1, dump_dir=dump_dir, include=include)
+def main(env_name, load_model, dump_path=None, epochs=5, include=None):
+    if dump_path is None:
+        date_time = datetime.now().strftime("%d.%m.%Y_%H.%M")
+        dump_path = os.path.join("test_videos", f"{env_name}-{date_time}")
+    env = get_env(env_name, record_interval=1, dump_dir=dump_path, include=include)
     policy = tf_v1.keras.models.load_model(load_model)
     policy = wrap_policy(env, policy)
     rollout(env, policy, epochs=epochs)
+
 
 if __name__ == "__main__":
     arg_dict = get_args()
