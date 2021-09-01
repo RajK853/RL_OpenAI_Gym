@@ -15,7 +15,6 @@ dependencies:
   - pip:
       - gym==0.17.0
       - beautifulsoup4
-      - mpi4py
       - highway-env
       - Box2D
       - pyyaml
