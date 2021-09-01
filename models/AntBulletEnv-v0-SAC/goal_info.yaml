@@ -1,0 +1,7 @@
+first_goal:
+  epoch: 1
+  reward: 293.1328522409589
+max_mean_reward:
+  epoch: 956
+  reward: 1527.979084395786
+num_goals_achieved: 1000

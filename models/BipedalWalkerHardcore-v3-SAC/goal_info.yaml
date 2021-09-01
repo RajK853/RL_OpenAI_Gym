@@ -1,0 +1,7 @@
+first_goal:
+  epoch: null
+  reward: null
+max_mean_reward:
+  epoch: 2119
+  reward: 20.82297681514636
+num_goals_achieved: 0
