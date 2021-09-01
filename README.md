@@ -16,7 +16,7 @@ This repository contains the solutions for the OpenAI gym environments using dif
 ```shell
 cd ${SRC_DIR}  
 conda env create -f environment.yml    
-conda activate open_ai_gym
+conda activate openai_gym
 ```
 
 ## Supported RL environments
