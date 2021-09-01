@@ -4,20 +4,18 @@ channels:
   - defaults
   - anaconda
 dependencies:
-  - conda>=4.6
+  - conda
   - python=3.7.4
   - pip>=19.0
-  - matplotlib=3.1.1
-  - pandas=0.25.3
   - scikit-learn=0.21.3
   - scipy=1.3.2
-  - tensorflow=2.1.0
-  - tensorflow-estimator=2.1.0
-  - tensorflow-probability=0.7.0
+  - tensorflow
+  - tensorflow-estimator
+  - tensorflow-probability
   - pip:
       - gym==0.17.0
-      - beautifulsoup4==4.9.1
-      - mpi4py==3.0.3
+      - beautifulsoup4
+      - mpi4py
       - highway-env
       - Box2D
       - pyyaml
