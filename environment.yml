@@ -6,11 +6,13 @@ dependencies:
   - python=3.7.4
   - pip>=19.0
   - mpi4py
-  - pyopengl
   - pip:
       - tensorflow
       - tensorflow-probability
       - gym==0.17.0
+      - pyopengl
+      - pyopengl_accelerate
+      - numpy
       - beautifulsoup4
       - highway-env
       - Box2D
