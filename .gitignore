@@ -8,7 +8,7 @@ __pycache__/
 
 # Summary directory
 summaries/
-BipedalWalkerHardcoreV3/
+temp/
 
 # Pycharm coding style
 .idea/
