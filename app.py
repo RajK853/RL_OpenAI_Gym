@@ -20,7 +20,9 @@ start_btn = sidebar.button("Start Testing", key="start_btn_i")
 video_path = os.path.join("temp", env_name)
 
 # Descriptions
-content_text = """
+st.title("OpenAI Gym - Reinforcement Learning Algorithms")
+
+st.write("""
 Use this application to test trained models in their respective RL environment.
 This is a web interface that executes the `test.py` script underneath to record
 the rollouts as `mp4` videos.  
@@ -30,12 +32,11 @@ Parameter information:
 - **Environment ID**: Name of the RL environment.  
   > Supported environments: [OpenAI gym](https://gym.openai.com/envs), [Mujoco](https://github.com/openai/mujoco-py), [PyBullet](https://pybullet.org/wordpress/) and [Highway-env](https://github.com/eleurent/highway-env) 
 - **Model path**: Path to the trained `.tf` or `.h5` model
+  > Samples models are present in the `models` directory
 - **Epochs**: Number of testing epochs
 - **Additional imports**: Name of the Python package to import to load the above RL environment.  
   > For instance, to load `PyBullet` environments, write `pybullet_envs` here.
-"""
-st.title("OpenAI Gym - Reinforcement Learning Algorithms")
-st.write(content_text)
+""")
 
 st.header("Rollout videos")
 
