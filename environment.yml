@@ -10,9 +10,7 @@ dependencies:
       - tensorflow
       - tensorflow-probability
       - gym==0.17.0
-      - pyopengl
-      - pyopengl_accelerate
-      - numpy
+      - pyglet
       - beautifulsoup4
       - highway-env
       - Box2D
