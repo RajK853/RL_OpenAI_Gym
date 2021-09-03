@@ -47,6 +47,7 @@ if start_btn:
 	st.write("Executing the command:")
 	st.code(' '.join(cmd), language="shell")
 	st.info(f"Please be patient. \nTesting the policy in '{env_name}'.")
+	cmd = ["xvfb-run", "-s", "'-screen 0 1400x900x24'"].extend(cmd)
 	subprocess.run(cmd)
 
 if os.path.exists(video_path):
