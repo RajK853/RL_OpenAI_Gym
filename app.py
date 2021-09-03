@@ -16,8 +16,6 @@ model_path = sidebar.text_input("Model path", key="model_path_i")
 epochs = sidebar.number_input("Epochs", 1, 10, key="epoch_i")
 include = sidebar.text_input("Additional imports", key="include_i")
 start_btn = sidebar.button("Start Testing", key="start_btn_i")
-apt_cmd = sidebar.text_input("Command", key="apt_cmd_i")
-apt_install_btn = sidebar.button("apt-install", key="apt_install_btn_i")
 # Video dump path
 video_path = os.path.join("temp", env_name)
 
@@ -50,14 +48,6 @@ if start_btn:
 	st.code(' '.join(cmd), language="shell")
 	st.info(f"Please be patient. \nTesting the policy in '{env_name}'.")
 	subprocess.run(cmd)
-
-if apt_install_btn:
-	if apt_cmd:
-		st.info(f"Executing: {apt_cmd}")
-		cmd = apt_cmd.split(" ")
-		subprocess.run(cmd)
-	else:
-		st.error("Please enter the package to install!")
 
 if os.path.exists(video_path):
 	files = [os.path.join(video_path, filename) for filename in os.listdir(video_path) if filename.endswith(".mp4")]
