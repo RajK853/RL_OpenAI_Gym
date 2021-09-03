@@ -7,7 +7,7 @@ dependencies:
   - pip>=19.0
   - mpi4py
   - pip:
-      - tensorflow
+      - tensorflow==1.15.0
       - tensorflow-probability
       - gym==0.17.0
       - pyglet
