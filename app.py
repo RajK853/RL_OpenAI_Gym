@@ -41,13 +41,13 @@ Parameter information:
 st.header("Rollout videos")
 
 if start_btn:
-	cmd = ["python", "test.py", "--env_name", env_name, "--epochs", str(epochs), "--load_model", model_path, "--dump_path", video_path]
+	cmd = ["xvfb-run", "-s", "'-screen 0 1400x900x24'"]
+	cmd.extend(["python", "test.py", "--env_name", env_name, "--epochs", str(epochs), "--load_model", model_path, "--dump_path", video_path])
 	if include:
 		cmd.extend(["--include", include])
 	st.write("Executing the command:")
 	st.code(' '.join(cmd), language="shell")
 	st.info(f"Please be patient. \nTesting the policy in '{env_name}'.")
-	cmd = ["xvfb-run", "-s", "'-screen 0 1400x900x24'"].extend(cmd)
 	subprocess.run(cmd)
 
 if os.path.exists(video_path):
