@@ -41,7 +41,7 @@ Parameter information:
 st.header("Rollout videos")
 
 if start_btn:
-	cmd = ["xvfb-run", "-s", "'-screen 0 1400x900x24'"]
+	cmd = ["xvfb-run", "-a"]
 	cmd.extend(["python", "test.py", "--env_name", env_name, "--epochs", str(epochs), "--load_model", model_path, "--dump_path", video_path])
 	if include:
 		cmd.extend(["--include", include])
