@@ -54,7 +54,7 @@ if start_btn:
 if apt_install_btn:
 	if apt_package:
 		st.info(f"Installing {apt_package}..")
-		cmd = ["sudo" "apt-get", "install", apt_package]
+		cmd = ["sudo", "apt-get", "install", apt_package]
 		subprocess.run(cmd)
 	else:
 		st.error("Please enter the package to install!")
