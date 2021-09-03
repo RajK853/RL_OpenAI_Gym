@@ -8,7 +8,7 @@ dependencies:
   - mpi4py
   - pip:
       - tensorflow==1.15.0
-      - tensorflow-probability
+      - tensorflow-probability==0.6.0
       - gym==0.17.0
       - pyglet
       - beautifulsoup4
