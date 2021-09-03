@@ -6,9 +6,10 @@ dependencies:
   - python=3.7.4
   - pip>=19.0
   - mpi4py
+  - tensorflow=2.1.0
+  - tensorflow-estimator=2.1.0
+  - tensorflow-probability=0.7.0
   - pip:
-      - tensorflow==1.15.0
-      - tensorflow-probability==0.6.0
       - gym==0.17.0
       - pyglet
       - beautifulsoup4
