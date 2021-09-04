@@ -18,7 +18,7 @@ def rollout(env, policy):
 
 def execute(env_name, model_path, epochs, dump_path, include):
   with Display(visible=False) as disp:
-    env, policy = setup(env_name, load_model, dump_path, include)
+    env, policy = setup(env_name, model_path, dump_path, include)
     with st.empty():
       for epoch in range(1, epochs+1):
         for img in rollout(env, policy):
