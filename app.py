@@ -17,7 +17,7 @@ def rollout(env, policy):
       yield state_img
 
 def execute(env_name, model_path, epochs, dump_path, include):
-  with Display(visible=False, manage_global_env=False) as disp:
+  with Display(visible=False) as disp:
     env, policy = setup(env_name, model_path, dump_path, include)
     with st.empty():
       for epoch in range(1, epochs+1):
