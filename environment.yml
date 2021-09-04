@@ -17,5 +17,6 @@ dependencies:
       - pyyaml
       - streamlit
       - pybullet
+      - pyglet
       - pyvirtualdisplay 
       - pillow
