@@ -45,6 +45,13 @@ def wrap_policy(env, policy):
     return policy
 
 
+def setup(env_name, load_model, dump_path, include):
+    env = get_env(env_name, record_interval=1, dump_dir=dump_path, include=include)
+    policy = tf_v1.keras.models.load_model(load_model)
+    policy = wrap_policy(env, policy)
+    return env, policy
+
+
 def rollout(env, policy, epochs=1):
     pbar = ProgressBar(epochs, title="Testing", info_text="Epoch: ({epoch}/%s)"%epochs)
     for epoch in range(1, epochs+1):
@@ -61,9 +68,7 @@ def main(env_name, load_model, dump_path=None, epochs=5, include=None):
     if dump_path is None:
         date_time = datetime.now().strftime("%d.%m.%Y_%H.%M")
         dump_path = os.path.join("test_videos", f"{env_name}-{date_time}")
-    env = get_env(env_name, record_interval=1, dump_dir=dump_path, include=include)
-    policy = tf_v1.keras.models.load_model(load_model)
-    policy = wrap_policy(env, policy)
+    env, policy = setup(env_name, load_model, dump_path, include)
     rollout(env, policy, epochs=epochs)
 
 
