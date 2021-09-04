@@ -11,9 +11,11 @@ dependencies:
   - tensorflow-probability=0.7.0
   - pip:
       - gym==0.17.0
-      - pyglet
       - beautifulsoup4
       - highway-env
       - Box2D
       - pyyaml
       - streamlit
+      - pybullet
+      - pyvirtualdisplay 
+      - pillow
