@@ -77,22 +77,6 @@ st.header("Rollout videos")
 st.info(f"OS: {OS.capitalize()}")
 
 if start_btn:
-  """cmd = []
-  if OS == "linux":
-    cmd.extend(["xvfb-run", "-a"])
-  cmd.extend([
-    "python", "test.py", 
-    "--env_name", env_name, 
-    "--epochs", str(epochs), 
-    "--load_model", model_path, 
-    "--dump_path", video_path,
-  ])
-  if include:
-    cmd.extend(["--include", include])
-  st.write("Executing the command:")
-  st.code(' '.join(cmd), language="shell")
-  st.info(f"Please be patient. \nTesting the policy in '{env_name}'.")
-  subprocess.run(cmd)"""
   execute(env_name, model_path, epochs, video_path, include)
 
 if os.path.exists(video_path):
