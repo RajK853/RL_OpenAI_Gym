@@ -33,6 +33,7 @@ class QNetwork(NeuralNetwork):
         """
         if layers is None:
             layers = DEFAULT_LAYERS
+        # TODO: Change it so that final layer is added here
         layers[-1]["units"] = output_size    # Note: This works as long as the final layer is a Dense layer
         super(QNetwork, self).__init__(layers=layers, **kwargs)
         # Loss parameters
