@@ -1,11 +1,4 @@
-# TODO: Find technique to register the algorithms instead of manually importing them here
-from .base_algorithm import BaseAlgorithm
-from .on_policy import OnPolicyAlgorithm
-from .off_policy import OffPolicyAlgorithm
-from .dqn import DQN
-from .ddqn import DDQN
-from .reinforce import Reinforce
-from .a2c import A2C
-from .sarsa import Sarsa
-from .ddpg import DDPG
-from .sac import SAC
+from os.path import dirname
+from src.utils import list_files
+
+__all__ = list_files(dirname(__path__[0]), excludes=["__init__.py"], ftype=".py")

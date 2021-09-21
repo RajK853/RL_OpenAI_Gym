@@ -1,5 +1,4 @@
-from .base_policy import BasePolicy
-from .discrete import DiscretePolicy
-from .gaussian import GaussianPolicy
-from .greedy_epsilon import GreedyEpsilonPolicy
-from .continuous import ContinuousPolicy
+from os.path import dirname
+from src.utils import list_files
+
+__all__ = list_files(dirname(__path__[0]), excludes=["__init__.py"], ftype=".py")
