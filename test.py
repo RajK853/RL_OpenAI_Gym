@@ -1,4 +1,7 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+import tqdm
 import argparse
 import numpy as np
 from datetime import datetime
@@ -6,7 +9,6 @@ from gym.spaces import Box, Discrete
 import tensorflow.compat.v1 as tf_v1
 
 from train import get_env
-from src.progressbar import ProgressBar
 
 
 def get_args():
@@ -53,11 +55,9 @@ def setup(env_name, load_model, dump_path, include):
 
 
 def rollout(env, policy, epochs=1):
-    pbar = ProgressBar(epochs, title="Testing", info_text="Epoch: ({epoch}/%s)"%epochs)
-    for epoch in range(1, epochs+1):
+    for epoch in tqdm.trange(1, epochs+1, desc="Testing"):
         done = False
         state = env.reset()
-        pbar.step(epoch=epoch)
         while not done:
             action = policy(state)
             next_state, reward, done, info = env.step(action)
