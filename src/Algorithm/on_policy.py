@@ -4,8 +4,8 @@ from .base_algorithm import BaseAlgorithm
 
 class OnPolicyAlgorithm(BaseAlgorithm):
 
-    def __init__(self, **kwargs):
-        super(OnPolicyAlgorithm, self).__init__(**kwargs)
+    def __init__(self, num_gradient_steps=2, **kwargs):
+        super(OnPolicyAlgorithm, self).__init__(num_gradient_steps=num_gradient_steps, **kwargs)
         self.field_names = ()
         self.trajectory = {}                # TODO: Does this causes memory leak?
 
