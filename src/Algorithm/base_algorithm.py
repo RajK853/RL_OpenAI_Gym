@@ -1,8 +1,8 @@
+import tqdm
 import numpy as np
 import os.path as os_path
 import tensorflow.compat.v1 as tf_v1
 
-from src.progressbar import ProgressBar
 from src.utils import get_space_size, json_dump, dump_yaml
 
 
@@ -17,16 +17,19 @@ def get_max_episode_steps(env):
 
 class BaseAlgorithm:
     VALID_POLICIES = {}
+    PARAMETERS = {
+        "render", "goal_trials", "goal_reward", "load_model", "layers", "preprocessors", "clip_norm",
+        "seed", "num_gradient_steps", "max_episode_steps"
+    }
 
     def __init__(self, *, sess, env, policy, render, goal_trials, goal_reward, load_model=None, summary_dir=None, 
-        layers=None, preprocessors=None, clip_norm=None, seed=None, num_gradient_steps="auto", 
-        max_episode_steps="auto", name="algo"):
-        if seed is not None:
-            np.random.seed(seed)
+        layers=None, preprocessors=None, clip_norm=None, seed=None, num_gradient_steps="auto", max_episode_steps="auto", 
+        name="algo"):
+        self.seed = seed
         self.scope = name
         self.env = env
         self.policy = policy
-        self.layers = layers
+        self._layers = layers
         self.preprocessors = preprocessors
         self.algo_type = self.__class__.__name__
         self.policy_type = self.policy.__class__.__name__
@@ -68,6 +71,9 @@ class BaseAlgorithm:
         self.histogram_summaries_tf = ()
         self.validate_policy()
 
+    def get_params(self):
+        return {attr_name: getattr(self, attr_name) for attr_name in self.PARAMETERS}
+
     def validate_policy(self):
         assert len(self.VALID_POLICIES) == 0 or self.policy_type in self.VALID_POLICIES, \
             f"{self.algo_type} only supports '{self.VALID_POLICIES}' and not {self.policy_type}!"
@@ -88,6 +94,10 @@ class BaseAlgorithm:
         print("\n# Initialized summaries:")
         for key, value in summaries.items():
             print(f"  {key}: {value}")
+
+    @property
+    def layers(self):
+        return self._layers
 
     @property
     def obs_shape(self):
@@ -159,12 +169,9 @@ class BaseAlgorithm:
             total_epochs (int) : Total number of epochs
         """
         self.hook_before_train(epochs=total_epochs)
-        progressbar = ProgressBar(total_epochs, title="# Training agent:", info_text="Epoch: ({epoch}/%s)" % total_epochs)
-        print()
-        for self.epoch in range(1, total_epochs + 1):
+        for self.epoch in tqdm.trange(1, total_epochs + 1, desc="# Training agent"):
             self._run_once()
             self.hook_after_epoch()
-            progressbar.step(epoch=self.epoch)
         self.hook_after_train()
 
     def write_summary(self, name, step, **kwargs):
@@ -234,6 +241,8 @@ class BaseAlgorithm:
             print(f"# Restored model weights from '{chkpt_dir}'")
 
     def hook_before_train(self, **kwargs):
+        if self.seed is not None:
+            np.random.seed(self.seed)
         self.policy.hook_before_train(**kwargs)
         self.init_summaries()
         print(f"\n# Goal: Get average reward of {self.goal_reward:.1f} over {self.goal_trials} consecutive trials!")
