@@ -3,7 +3,6 @@ MinitaurBulletEnv-v0: &base_config
   epochs: 1000
   record_interval: 10
   render: False
-  training: True
   summary_dir: summaries/pybullet
   include: [pybullet_envs]
   algo: 
