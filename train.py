@@ -1,17 +1,18 @@
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import sys
 import gym
 import random
+from pandas import read_csv
 from datetime import datetime
 import tensorflow.compat.v1 as tf_v1
 from tensorflow.python.util import deprecation
-from pandas import read_csv
 
-from src.config import get_algo, get_policy
+from src.registry import load_algo, load_policy
 from src.utils import exec_from_yaml, get_goal_info, dump_yaml
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 TF_CONFIG = tf_v1.ConfigProto(gpu_options=tf_v1.GPUOptions(per_process_gpu_memory_fraction=0.7), allow_soft_placement=True)
 
 ENV_INFO_FILE = r"assets/env_info.csv"
@@ -38,7 +39,8 @@ def get_env(env_name, *, dump_dir, seed=None, record_interval=0, include=None, p
     if pre_render:
         env.render()
     if isinstance(env.observation_space, gym.spaces.Dict):
-        env = gym.wrappers.FilterObservation(env, filter_keys=["observation", "desired_goal"])  # TODO: Take filter_keys as arguments?
+        # TODO: Pass filter_keys as the `get_env` function arguments?
+        env = gym.wrappers.FilterObservation(env, filter_keys=["observation", "desired_goal"])
         env = gym.wrappers.FlattenObservation(env)
     video_callable = record_video if record_interval > 0 else lambda x: False
     env = gym.wrappers.Monitor(env, dump_dir, force=True, video_callable=video_callable)
@@ -58,40 +60,52 @@ def main(env_name, algo, policy, epochs, record_interval=10, seed=None, load_mod
     tf_v1.reset_default_graph()
     with tf_v1.Session(config=TF_CONFIG) as sess:
         try:
-            algo_func, algo_kwargs = get_algo(algo)
-            policy_func, policy_kwargs = get_policy(policy)
             print("\n# Training:")
             print("  Training information are available via Tensorboard with the given command:")
             print(f"  tensorboard --host localhost --logdir {summary_dir}")
-            config_dict = {"epochs": epochs, 
-                           "seed": seed, 
-                           "load_model": load_model, 
-                           "algo": {"name": algo["name"], 
-                                    "kwargs": algo_kwargs},
-                           "policy": {"name": policy["name"], "kwargs": policy_kwargs}}
-            dump_yaml(config_dict, file_path=os.path.join(exp_summary_dir, "config.yaml"))
-
-            policy_kwargs.update({"env": env})
-            _policy = policy_func(**policy_kwargs)
             
-            algo_kwargs.update({"policy": _policy,
-                                "sess": sess,
-                                "env": env,
-                                "summary_dir": model_summary_dir,
-                                "load_model": load_model,
-                                "goal_trials": goal_trials,
-                                "goal_reward": goal_reward,
-                                "render": render,
-                                "seed": seed})
-            _algo = algo_func(**algo_kwargs)
-            _algo.run(total_epochs=epochs)                     # Run the algorithm for given epochs
+            _policy = load_policy(policy["name"], env=env, **policy["kwargs"])
+
+            algo["kwargs"].update({
+                "policy": _policy,
+                "sess": sess,
+                "env": env,
+                "summary_dir": model_summary_dir,
+                "load_model": load_model,
+                "goal_trials": goal_trials,
+                "goal_reward": goal_reward,
+                "render": render,
+                "seed": seed
+            })
+
+            _algo = load_algo(algo["name"], **algo["kwargs"])            
+            _algo.run(total_epochs=epochs)
         except KeyboardInterrupt:
             print("\n# Interrupted by the user!")
             _algo.hook_after_train()
         finally:
+            config_dict = {
+                "env_name": env_name,
+                "epochs": epochs, 
+                "seed": seed, 
+                "load_model": load_model,
+                "record_interval": record_interval,
+                "render": render,
+                "summary_dir": summary_dir,
+                "include": include,
+                "algo": {
+                    "name": algo["name"],
+                    "kwargs": _algo.get_params(),
+                },
+                "policy": {
+                    "name": policy["name"], 
+                    "kwargs": _policy.get_params(),
+                },
+            }
+            dump_yaml({env_name: config_dict}, file_path=os.path.join(exp_summary_dir, "config.yaml"))
             env.close()
 
 
 if __name__ == "__main__":
     yaml_config_file = sys.argv[1]
-    exec_from_yaml(yaml_config_file, exec_func=main, safe_load=True)
+    exec_from_yaml(yaml_config_file, exec_func=main, safe_load=False)

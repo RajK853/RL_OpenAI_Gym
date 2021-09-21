@@ -1,24 +1,39 @@
 import numpy as np
 import tensorflow.compat.v1 as tf_v1
 
-from . import Reinforce
+from .reinforce import Reinforce
+from src.registry import registry
 from src.utils import get_scheduler
 from src.Network.qnetwork import QNetwork
 from src.Network.utils import get_clipped_train_op
 
+DEFAULT_KWARGS = {
+    "lr_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.0001,
+    },
+}
 
+
+@registry.algorithm.register("a2c")
 class A2C(Reinforce):
+    PARAMETERS = Reinforce.PARAMETERS.union({"lr_kwargs"})
 
-    def __init__(self, *, lr_kwargs, layers=None, **kwargs):
+    def __init__(self, *, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], **kwargs):
         super(A2C, self).__init__(**kwargs)
-        self.critic = QNetwork(input_shape=self.obs_shape, output_size=1, layers=layers, scope="critic")
+        self.critic = QNetwork(input_shapes=[self.obs_shape], output_size=1, layers=self._layers, 
+            preprocessors=self.preprocessors, scope="critic")
+        self.lr_kwargs = lr_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.schedulers += (self.lr_scheduler, )
         # Placeholders
         self.lr_ph = tf_v1.placeholder("float32", shape=(), name="lr_ph")
-        self.targets_ph = tf_v1.placeholder("float32", shape=(None, 1), name="targets_ph")
         self.summary_init_objects += (self.critic, )
         self.scalar_summaries += ("lr", )
+
+    @property
+    def layers(self):
+        return self.critic.layers
 
     @property
     def lr(self):
@@ -34,8 +49,9 @@ class A2C(Reinforce):
     def train_actor(self, states, actions, advantage):
         feed_dict = {
             self.policy.model.input: states,
-            self.policy.actions_ph: actions,
-            self.policy.targets_ph: advantage
+            self.states_ph: states,               # TODO: Remove default placeholders and define it in the algo class instead?
+            self.actions_ph: actions,
+            self.targets_ph: advantage
         }
         self.policy.update(self.sess, feed_dict=feed_dict)
 
@@ -50,11 +66,10 @@ class A2C(Reinforce):
     def train(self):
         states, actions, rewards = self.sample_trajectory()
         discounted_return = self.compute_discounted_return(rewards)
-        # discounted_return = standardize_array(discounted_return)
         discounted_return = np.expand_dims(discounted_return, axis=-1)
         values = self.critic.predict(states)                   # TODO: Directly connect its tf graph to the critic loss func 
         advantage = discounted_return - values
-        for _ in range(self.num_train):
+        for _ in range(self.num_gradient_steps):
             self.train_critic(states, discounted_return)
             self.train_actor(states, actions, advantage)
 

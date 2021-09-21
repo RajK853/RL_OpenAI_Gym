@@ -2,19 +2,29 @@ import numpy as np
 import tensorflow_probability as tfp
 import tensorflow.compat.v1 as tf_v1
 
-from . import OnPolicyAlgorithm
+from .on_policy import OnPolicyAlgorithm
+from src.registry import registry
 from src.utils import get_scheduler, standardize_array
 from src.Network.utils import get_clipped_train_op
 
 tfd = tfp.distributions
 
+DEFAULT_KWARGS = {
+    "gamma_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.997,
+    },
+}
 
+@registry.algorithm.register("reinforce")
 class Reinforce(OnPolicyAlgorithm):
     VALID_POLICIES = {"DiscretePolicy", "GaussianPolicy"}
+    PARAMETERS = OnPolicyAlgorithm.PARAMETERS.union({"alpha", "gamma_kwargs"})
 
-    def __init__(self, *, alpha=0.001, gamma_kwargs, **kwargs):
+    def __init__(self, *, alpha=0.003, gamma_kwargs=DEFAULT_KWARGS["gamma_kwargs"], **kwargs):
         super(Reinforce, self).__init__(**kwargs)
         self.alpha = alpha
+        self.gamma_kwargs = gamma_kwargs
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
         self.schedulers += (self.gamma_scheduler, )
         self.targets_ph = tf_v1.placeholder("float32", shape=(None, 1), name="target_ph")
@@ -47,7 +57,7 @@ class Reinforce(OnPolicyAlgorithm):
         else:
             raise NotImplementedError(f"Received {self.policy_type}. This should have never happened!")
 
-        log_loss = - log_actions*self.targets_ph
+        log_loss = - log_actions * self.targets_ph
         entropy_loss = - self.alpha * entropy
         loss = log_loss + entropy_loss
         optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.policy.lr_ph)

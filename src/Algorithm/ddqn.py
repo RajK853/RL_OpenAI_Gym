@@ -1,13 +1,15 @@
 import tensorflow.compat.v1 as tf_v1
 
 from .dqn import DQN
+from src.registry import registry
 from src.Network.qnetwork import QNetwork
 
 
+@registry.algorithm.register("ddqn")
 class DDQN(DQN):
     def __init__(self, *, tau=0.005, update_interval=10, **kwargs):
         super(DDQN, self).__init__(**kwargs)
-        self.target_q = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self.layers, 
+        self.target_q = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self._layers, 
             preprocessors=self.preprocessors, scope="target_q_network")
         self.target_q.init_weight_update_op(self.q_net)
         self.tau = tau

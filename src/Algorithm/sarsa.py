@@ -1,21 +1,44 @@
 import tensorflow.compat.v1 as tf_v1
 
-from . import OnPolicyAlgorithm
+from .on_policy import OnPolicyAlgorithm
+from src.registry import registry
 from src.utils import get_scheduler
 from src.Network.qnetwork import QNetwork
 from src.Network.utils import get_clipped_train_op
 
 
-class Sarsa(OnPolicyAlgorithm):
+DEFAULT_KWARGS = {
+    "gamma_kwargs": {
+        "type": "ExpScheduler",
+        "decay_rate": 0.005,
+        "e_offset": 1.0,
+        "e_scale": -1.0,
+        "update_step": 50,
+        "clip_range": (0.99, 0.997),
+    },
+    "lr_kwargs": {
+        "type": "ExpScheduler",
+        "decay_rate": 0.005,
+        "update_step": 20,
+        "clip_range": (0.0001, 0.001),
+    },
+}
 
-    def __init__(self, lr_kwargs, gamma_kwargs, reward_scale=1.0, **kwargs):
+
+@registry.algorithm.register("sarsa")
+class Sarsa(OnPolicyAlgorithm):
+    PARAMETERS = OnPolicyAlgorithm.PARAMETERS.union({"lr_kwargs", "gamma_kwargs", "reward_scale"})
+
+    def __init__(self, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], gamma_kwargs=DEFAULT_KWARGS["gamma_kwargs"], reward_scale=1.0, **kwargs):
         super(Sarsa, self).__init__(**kwargs)
+        self.lr_kwargs = lr_kwargs
+        self.gamma_kwargs = gamma_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
         self.schedulers += (self.lr_scheduler, self.gamma_scheduler)
         self.reward_scale = reward_scale
         self.field_names = ("state", "action", "reward", "next_state", "done")
-        self.q_net = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self.layers, 
+        self.q_net = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self._layers, 
             preprocessors=self.preprocessors, scope="q_network")
         self.target_q = self.q_net
         # Placeholders
@@ -39,6 +62,10 @@ class Sarsa(OnPolicyAlgorithm):
     def lr(self):
         return self.lr_scheduler.value
 
+    @property
+    def layers(self):
+        return self.q_net.layers
+
     def get_q_target(self):
         next_qs = self.target_q(self.next_states_ph)
         batch_size = tf_v1.shape(self.next_actions_ph)[0]
@@ -54,7 +81,6 @@ class Sarsa(OnPolicyAlgorithm):
         indices = tf_v1.stack([tf_v1.range(batch_size), self.actions_ph], axis=-1)
         # From the q_predictions, only change the Q values of given action index to the target value
         q_targets = tf_v1.tensor_scatter_nd_update(q_predictions, indices, q_targets)
-        # q_loss = tf_v1.reduce_mean(tf_v1.losses.huber_loss(labels=q_targets, predictions=q_predictions))
         q_loss = tf_v1.losses.mean_squared_error(labels=q_targets, predictions=q_predictions)
         optimizer = tf_v1.train.AdamOptimizer(learning_rate=self.lr_ph)
         train_op = get_clipped_train_op(q_loss, optimizer=optimizer, var_list=self.q_net.trainable_vars,

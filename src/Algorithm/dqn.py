@@ -1,21 +1,44 @@
 import tensorflow.compat.v1 as tf_v1
 
-from . import OffPolicyAlgorithm
+from .off_policy import OffPolicyAlgorithm
+from src.registry import registry
 from src.utils import get_scheduler
 from src.Network import QNetwork
 from src.Network.utils import get_clipped_train_op
 
 
-class DQN(OffPolicyAlgorithm):
-    VALID_POLICIES = ["GreedyEpsilonPolicy"]
+DEFAULT_KWARGS = {
+    "gamma_kwargs": {
+        "type": "ExpScheduler",
+        "decay_rate": 0.005,
+        "e_offset": 1.0,
+        "e_scale": -1.0,
+        "update_step": 50,
+        "clip_range": (0.99, 0.997),
+    },
+    "lr_kwargs": {
+        "type": "ExpScheduler",
+        "decay_rate": 0.005,
+        "update_step": 20,
+        "clip_range": (0.0001, 0.001),
+    }
+}
 
-    def __init__(self, *, lr_kwargs, gamma_kwargs, reward_scale=1.0, **kwargs):
+
+@registry.algorithm.register("dqn")
+class DQN(OffPolicyAlgorithm):
+    VALID_POLICIES = {"GreedyEpsilonPolicy"}
+    PARAMETERS = OffPolicyAlgorithm.PARAMETERS.union({"lr_kwargs", "gamma_kwargs", "reward_scale"})
+
+    def __init__(self, *, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], gamma_kwargs=DEFAULT_KWARGS["gamma_kwargs"], reward_scale=1.0, **kwargs):
         super(DQN, self).__init__(**kwargs)
+        self.lr_kwargs = lr_kwargs
+        self.gamma_kwargs = gamma_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
         self.schedulers += (self.lr_scheduler, self.gamma_scheduler)
         self.reward_scale = reward_scale
-        self.q_net = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self.layers, 
+        self.q_net = QNetwork(input_shapes=[self.obs_shape], output_size=self.action_size, layers=self._layers, 
             preprocessors=self.preprocessors, scope="q_network")
         self.target_q = self.q_net
         # Placeholders
@@ -28,6 +51,10 @@ class DQN(OffPolicyAlgorithm):
         # Summary ops
         self.summary_init_objects += (self.q_net, )
         self.scalar_summaries += ("gamma", "lr")
+
+    @property
+    def layers(self):
+        return self.q_net.layers
 
     @property
     def gamma(self):

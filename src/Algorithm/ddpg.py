@@ -1,19 +1,43 @@
 import numpy as np
 import tensorflow.compat.v1 as tf_v1
-from . import OffPolicyAlgorithm
+
+from .off_policy import OffPolicyAlgorithm
+from src.registry import registry
+from src.utils import get_scheduler
 from src.Network import NeuralNetwork, QNetwork
 from src.Network.utils import get_clipped_train_op
-from src.utils import get_scheduler
 
+DEFAULT_KWARGS = {
+    "sigma_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 1.0,
+    },
+    "gamma_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.99,
+    },
+    "lr_kwargs": {
+        "type": "ConnstantScheduler",
+        "value": 0.0001,
+    },
+}
 
+@registry.algorithm.register("ddpg")
 class DDPG(OffPolicyAlgorithm):
     VALID_POLICIES = ["ContinuousPolicy"]
+    PARAMETERS = OffPolicyAlgorithm.PARAMETERS.union({
+        "tau", "update_interval", "lr_kwargs", "gamma_kwargs", "sigma_kwargs", "reward_scale"
+    })
 
-    def __init__(self, *, tau, update_interval, lr_kwargs, gamma_kwargs, sigma_kwargs, reward_scale=1.0, **kwargs):
+    def __init__(self, *, tau=0.003, update_interval=10, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], gamma_kwargs=DEFAULT_KWARGS["gamma_kwargs"], 
+        sigma_kwargs=DEFAULT_KWARGS["sigma_kwargs"], reward_scale=1.0, **kwargs):
         super(DDPG, self).__init__(**kwargs)
         self.tau = tau
         self.reward_scale = reward_scale
         self.update_interval = update_interval
+        self.lr_kwargs = lr_kwargs
+        self.gamma_kwargs = gamma_kwargs
+        self.sigma_kwargs = sigma_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
         self.sigma_scheduler = get_scheduler(sigma_kwargs)
@@ -43,13 +67,17 @@ class DDPG(OffPolicyAlgorithm):
     def sigma(self):
         return self.sigma_scheduler.value
 
+    @property
+    def layers(self):
+        return self.critic.layers
+
     def init_critics(self):
         q_nets = []
         target_q_nets = []
         q_net_kwargs = {
             "input_shapes": [self.obs_shape, self.action_shape],
             "output_size": 1,
-            "layers": self.layers,
+            "layers": self._layers,
             "preprocessors": self.preprocessors}
         self.critic = QNetwork(**q_net_kwargs, scope="critic")
         self.target = QNetwork(**q_net_kwargs, scope="target_critic")

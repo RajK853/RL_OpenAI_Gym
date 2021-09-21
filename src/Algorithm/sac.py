@@ -1,20 +1,46 @@
 import numpy as np
 import tensorflow.compat.v1 as tf_v1
 
+from .off_policy import OffPolicyAlgorithm
 from src.Network.qnetwork import QNetwork
+from src.registry import registry
 from src.Network.utils import get_clipped_train_op
 from src.utils import get_scheduler
-from . import OffPolicyAlgorithm
 
 
+DEFAULT_KWARGS = {
+    "gamma_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.99,
+    },
+    "q_lr_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.0003,
+    },
+    "alpha_lr_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.0003,
+    },
+}
+
+
+@registry.algorithm.register("sac")
 class SAC(OffPolicyAlgorithm):
     VALID_POLICIES = {"GaussianPolicy"}
+    PARAMETERS = OffPolicyAlgorithm.PARAMETERS.union({
+        "reward_scale", "gamma_kwargs", "alpha_lr_kwargs", "q_lr_kwargs", "tau", "update_interval", "num_q_nets",
+        "auto_ent", "target_entropy", "init_log_alpha"
+    })
 
-    def __init__(self, *, reward_scale, gamma_kwargs, alpha_lr_kwargs, q_lr_kwargs, tau, update_interval, num_q_nets=2,
-                 auto_ent=True, target_entropy="auto", init_log_alpha=0.0, **kwargs):
+    def __init__(self, *, reward_scale=1.0, gamma_kwargs=DEFAULT_KWARGS["gamma_kwargs"], alpha_lr_kwargs=DEFAULT_KWARGS["alpha_lr_kwargs"], 
+        q_lr_kwargs=DEFAULT_KWARGS["q_lr_kwargs"], tau=5e-3, update_interval=1, num_q_nets=2, auto_ent=True, target_entropy="auto", 
+        init_log_alpha=0.0, **kwargs):
         super(SAC, self).__init__(**kwargs)
         assert num_q_nets > 1, f"Minimum number of Q network is 2 but given '{num_q_nets}'"
         self.reward_scale = reward_scale
+        self.q_lr_kwargs = q_lr_kwargs
+        self.gamma_kwargs = gamma_kwargs
+        self.alpha_lr_kwargs = alpha_lr_kwargs
         self.q_lr_scheduler = get_scheduler(q_lr_kwargs)
         self.gamma_scheduler = get_scheduler(gamma_kwargs)
         self.alpha_lr_scheduler = get_scheduler(alpha_lr_kwargs)
@@ -23,9 +49,10 @@ class SAC(OffPolicyAlgorithm):
         self.update_interval = update_interval
         self.num_q_nets = num_q_nets
         self.auto_ent = auto_ent
+        self.init_log_alpha = init_log_alpha
         if self.auto_ent:
             assert target_entropy == "auto" or isinstance(target_entropy, (int, float))
-            self.target_entropy = -self.action_size if target_entropy == "auto" else target_entropy
+            self.target_entropy = -float(self.action_size) if target_entropy == "auto" else target_entropy
             self.log_alpha_tf = tf_v1.get_variable('log_alpha', dtype="float32", initializer=float(init_log_alpha))
         else:
             self.target_entropy = None
@@ -65,13 +92,17 @@ class SAC(OffPolicyAlgorithm):
     def alpha(self):
         return np.exp(self.log_alpha)
 
+    @property
+    def layers(self):
+        return self.critics[0].layers
+
     def init_critics(self):
         q_nets = []
         target_q_nets = []
         q_net_kwargs = {
             "input_shapes": [self.obs_shape, self.action_shape],
             "output_size": 1,
-            "layers": self.layers,
+            "layers": self._layers,
             "preprocessors": self.preprocessors}
         for i in range(self.num_q_nets):
             q_net = QNetwork(**q_net_kwargs, scope=f"critic_{i}")
