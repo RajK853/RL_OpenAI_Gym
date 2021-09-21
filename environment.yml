@@ -14,9 +14,11 @@ dependencies:
       - beautifulsoup4
       - highway-env
       - Box2D
-      - pyyaml
+      - pyyaml==3.12
       - streamlit
       - pybullet
       - pyglet
       - pyvirtualdisplay 
       - pillow
+      - class_registry
+      - tqdm
