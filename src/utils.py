@@ -7,12 +7,29 @@ from gym.spaces import Box, Discrete
 from . import Scheduler
 
 
+def list_files(path, excludes=None, ftype=".py"):
+    """
+    Returns the list of files of given type present in the given directory
+    :param path: (str) Directory path
+    :param excludes: (list/tuple/iterator) File names to exclude
+    :param ftype: (str) File extension
+    :return: (list) List of files
+    """
+    if excludes is None:
+        excludes = []
+    filenames = [filename.rstrip(ftype) 
+                 for filename in os.listdir(path) 
+                 if filename.endswith(ftype) and filename not in excludes]
+    return filenames
+
+
 def get_scheduler(config_dict):
     """
     Returns a Scheduler object based on the config_dict
     :param config_dict: (dict) Dictionary with arguments for a given scheduler class
     :return: (Scheduler) Scheduler object
     """
+    config_dict = config_dict.copy()
     SchedulerClass = getattr(Scheduler, config_dict.pop("type"))
     return SchedulerClass(**config_dict)
 
@@ -163,7 +180,7 @@ def load_files(dir_path, file_types=None):
     return file_paths
 
 
-def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True, skip_prefix="default"):
+def exec_from_yaml(config_path, exec_func, title="Experiment", safe_load=True, skip_prefix="ignore"):
     """
     Executes the given function by loading parameters from a YAML file with given structure:
     NOTE: The argument names in the YAML file should match the argument names of the given execution function.
