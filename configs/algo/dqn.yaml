@@ -5,7 +5,7 @@ CartPole-v1: &base_config
   render: False
   summary_dir: summaries/classic_control
   algo:
-    name: dqn
+    name: ddqn
     kwargs: &algo_configs
       clip_norm: 5.0
       num_gradient_steps: 25
@@ -28,7 +28,7 @@ CartPole-v1: &base_config
         update_step: 20
         clip_range: [0.01, 0.5]
 
-MountainCar-v0:
+ignore_MountainCar-v0:
   <<: *base_config
   env_name: MountainCar-v0
   algo:
@@ -43,7 +43,7 @@ MountainCar-v0:
     name: greedy_epsilon
     kwargs: *policy_configs
 
-LunarLander-v2:
+ignore_LunarLander-v2:
   <<: *base_config
   env_name: LunarLander-v2
   summary_dir: summaries/box2d
@@ -55,7 +55,7 @@ LunarLander-v2:
         type: ConstantScheduler
         value: 0.997
 
-Acrobot-v1:
+ignore_Acrobot-v1:
   <<: *base_config
   env_name: Acrobot-v1
   algo:

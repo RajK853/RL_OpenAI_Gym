@@ -1,6 +1,6 @@
 default_HalfCheetah: &base_config
   env_name: HalfCheetah-v2
-  epochs: 2
+  epochs: 1000
   record_interval: 10
   render: False
   summary_dir: summaries/mujoco

@@ -1,9 +1,9 @@
-default_Discrete: &base_config
+ignore_Discrete: &base_config
   env_name: CartPole-v1
   epochs: 1000
   record_interval: 10
   render: False
-  summary_dir: temp
+  summary_dir: summaries/classic_control
   algo:
     name: reinforce
     kwargs: &algo_configs
