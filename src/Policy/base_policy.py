@@ -5,6 +5,7 @@ from src.utils import get_space_size
 
 
 class BasePolicy:
+    PARAMETERS = {"clip_norm"}
 
     def __init__(self, *, env, name="policy", clip_norm=2.0):
         self.scope = name
@@ -25,6 +26,9 @@ class BasePolicy:
         self._loss = None
         self.train_op = None
         self._trainable_vars = None
+
+    def get_params(self):
+        return {attr_name: getattr(self, attr_name) for attr_name in self.PARAMETERS}
 
     @property
     def loss(self):
