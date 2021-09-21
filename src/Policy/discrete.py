@@ -3,6 +3,7 @@ import tensorflow.compat.v1 as tf_v1
 
 from .base_policy import BasePolicy
 from src.utils import get_scheduler
+from src.registry import registry
 from src.Network.neural_network import NeuralNetwork
 from src.Network.utils import get_clipped_train_op
 
@@ -23,11 +24,21 @@ DEFAULT_LAYERS = [
     {"type": "Dense", "units": 1, "activation": "softmax"},
 ]
 
+DEFAULT_KWARGS = {
+    "lr_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.0001,
+    },
+}
 
+
+@registry.policy.register("discrete")
 class DiscretePolicy(BasePolicy):
+    PARAMETERS = BasePolicy.PARAMETERS.union({"lr_kwargs", "layers", "preprocessors"})
 
-    def __init__(self, *, lr_kwargs, layers=None, preprocessors=None, **kwargs):
+    def __init__(self, *, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], layers=None, preprocessors=None, **kwargs):
         super(DiscretePolicy, self).__init__(**kwargs)
+        self.lr_kwargs = lr_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.schedulers += (self.lr_scheduler, )
         # Placeholders

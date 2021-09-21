@@ -1,7 +1,8 @@
 import tensorflow.compat.v1 as tf_v1
 
-from src.utils import get_scheduler
+from src.registry import registry
 from .base_policy import BasePolicy
+from src.utils import get_scheduler
 from src.Network.neural_network import NeuralNetwork
 
 regularizers = tf_v1.keras.regularizers
@@ -21,11 +22,21 @@ DEFAULT_LAYERS = [
     {"type": "Dense", "units": 1, "activation": "tanh"},        # TODO: Don't include output layer here
 ]
 
+DEFAULT_KWARGS = {
+    "lr_kwargs": {
+        "type": "ConstantScheduler",
+        "value": 0.0001,
+    },
+}
 
+
+@registry.policy.register("continuous")
 class ContinuousPolicy(BasePolicy):
+    PARAMETERS = BasePolicy.PARAMETERS.union({"lr_kwargs", "layers", "preprocessors"})
 
-    def __init__(self, *, lr_kwargs, layers=None, preprocessors=None, **kwargs):
+    def __init__(self, *, lr_kwargs=DEFAULT_KWARGS["lr_kwargs"], layers=None, preprocessors=None, **kwargs):
         super(ContinuousPolicy, self).__init__(**kwargs)
+        self.lr_kwargs = lr_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.schedulers += (self.lr_scheduler, )
         self.lr_ph = tf_v1.placeholder("float32", shape=[], name=f"{self.scope}/lr_ph")

@@ -1,12 +1,24 @@
 import numpy as np
+
 from .base_policy import BasePolicy
+from src.registry import registry
 from src.utils import get_scheduler
 
+DEFAULT_KWARGS = {
+    "eps_kwargs": {
+        "decay": 0.001,
+        "clip_range": (0.001, 0.7),
+    },
+}
 
+
+@registry.policy.register("greedy_epsilon")
 class GreedyEpsilonPolicy(BasePolicy):
+    PARAMETERS = BasePolicy.PARAMETERS.union({"eps_kwargs", "explore_ratio", "explore_exploit_interval"})
 
-    def __init__(self, *, eps_kwargs, explore_ratio=0.60, explore_exploit_interval=20, **kwargs):
+    def __init__(self, *, eps_kwargs=DEFAULT_KWARGS["eps_kwargs"], explore_ratio=0.60, explore_exploit_interval=20, **kwargs):
         super(GreedyEpsilonPolicy, self).__init__(**kwargs)
+        self.eps_kwargs = eps_kwargs
         self.eps_scheduler = get_scheduler(eps_kwargs)
         self.schedulers += (self.eps_scheduler, )
         self.scalar_summaries += ("eps", )

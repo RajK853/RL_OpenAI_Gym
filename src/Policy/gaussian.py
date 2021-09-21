@@ -3,6 +3,7 @@ import tensorflow_probability as tfp
 
 from src.Network.neural_network import NeuralNetwork
 from src.Network.utils import get_clipped_train_op
+from src.registry import registry
 from src.utils import get_scheduler
 from .base_policy import BasePolicy
 from src import Scheduler
@@ -29,11 +30,17 @@ DEFAULT_LAYERS = [
 ]
 
 
+@registry.policy.register("gaussian")
 class GaussianPolicy(BasePolicy):
+    PARAMETERS = BasePolicy.PARAMETERS.union({
+        "lr_kwargs", "layers", "preprocessors", "learn_std", "std_value", "mu_range", "log_std_range"
+    })
 
     def __init__(self, *, lr_kwargs, layers=None, preprocessors=None, learn_std=True, std_value=0.1,
                  mu_range=None, log_std_range=None, **kwargs):
         super(GaussianPolicy, self).__init__(**kwargs)
+        self.std_value = std_value
+        self.lr_kwargs = lr_kwargs
         self.lr_scheduler = get_scheduler(lr_kwargs)
         self.schedulers += (self.lr_scheduler, )
         self.learn_std = learn_std
