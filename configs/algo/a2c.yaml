@@ -8,7 +8,7 @@ Discrete: &base_config
   algo:
     name: a2c
     kwargs: &algo_configs
-      num_train: 2
+      num_gradient_steps: 2
       gamma_kwargs:
         type: ConstantScheduler
         value: 0.997
